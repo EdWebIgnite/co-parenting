@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prototype</title>
+<style>
+:root{
+  --bg:#f6f4ef; --card:#fff; --ink:#1f2a2e; --muted:#5f6b70; --line:#e4e0d7;
+  --me:#2f7d6d; --me-soft:#dcefe9; --other:#c98a2b; --other-soft:#f7ead4;
+  --accent:#2f7d6d; --accent-ink:#fff; --warn:#b4472f; --warn-soft:#f8e1db;
+  --ok:#2f7d4a; --ok-soft:#e0f0e4; --info-soft:#e7eef6;
+  --radius:14px; --tap:48px;
+}
+body.hc{
+  --bg:#eef0f3; --accent:#34506b; --me:#34506b; --me-soft:#dde5ee;
+  --other:#7a6a55; --other-soft:#ece6dd;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#d9d6cf;color:var(--ink);font-size:16px;line-height:1.4}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.phone{max-width:430px;min-height:100vh;margin:0 auto;background:var(--bg);position:relative;display:flex;flex-direction:column}
+.proto{background:#222;color:#eee;font-size:12px;padding:6px 8px;display:flex;gap:6px;align-items:center}
+.proto b{color:#fff}
+.proto .seg{display:inline-flex;border:1px solid #555;border-radius:999px;overflow:hidden}
+.proto .seg button{background:none;border:0;color:#ccc;padding:4px 8px;font-size:12px}
+.proto .seg button.on{background:#eee;color:#222}
+.proto .reset{margin-left:auto;background:none;border:1px solid #555;color:#ccc;border-radius:999px;padding:4px 8px;font-size:12px}
+header.top{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+header.top h1{font-size:18px;margin:0;flex:1}
+.badge{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--me-soft);color:var(--me);font-weight:600;white-space:nowrap}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:18px;display:grid;place-items:center}
+main{flex:1;padding:16px 16px 96px}
+nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;border:0;background:none;padding:8px 0 10px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px;position:relative}
+nav.tabs button .ic{font-size:20px;line-height:1}
+nav.tabs button.on{color:var(--accent);font-weight:600}
+nav.tabs .dot{position:absolute;top:6px;left:calc(50% + 8px);background:var(--warn);color:#fff;font-size:10px;border-radius:999px;padding:0 5px;min-width:16px}
+h2{font-size:20px;margin:4px 0 12px}
+h3{font-size:15px;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.card.tight{padding:0;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);min-height:var(--tap);background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row .sub{font-size:13px;color:var(--muted)}
+.chev{color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);padding:0 18px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:var(--card);color:var(--accent)}
+.btn.warn{background:var(--warn);border-color:var(--warn)}
+.btn.block{width:100%}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btns .btn{flex:1}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--line);color:var(--ink);white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.wait{background:var(--other-soft);color:#7a5413}
+.pill.info{background:var(--info-soft);color:#2d4d6e}
+.banner{border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px;background:var(--info-soft);color:#2d4d6e}
+.banner.lock{background:#e3e7ec;color:#2d3b48}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.who{display:flex;align-items:center;gap:12px}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.av.me{background:var(--me)} .av.other{background:var(--other)} .av.kid{background:#8a7bb8}
+.big{font-size:22px;font-weight:700}
+label.f{display:block;font-size:14px;font-weight:600;margin:12px 0 6px}
+input.f,select.f,textarea.f{width:100%;min-height:var(--tap);border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+textarea.f{min-height:90px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:12px 0}
+.check input{width:22px;height:22px;flex:none;margin-top:1px}
+.choice{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.choice.on{border-color:var(--accent);background:var(--me-soft)}
+.choice b{display:block;font-size:17px;margin-bottom:4px}
+.legal{font-size:11px;color:var(--warn);font-weight:700;letter-spacing:.05em}
+/* calendar */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.grid .dow{font-size:11px;text-align:center;color:var(--muted);padding:4px 0}
+.day{aspect-ratio:1/1.15;border-radius:8px;border:0;padding:3px;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;position:relative}
+.day.me{background:var(--me-soft)} .day.other{background:var(--other-soft)}
+.day.out{opacity:.35}
+.day.today{outline:2px solid var(--ink)}
+.day .marks{display:flex;gap:2px}
+.day .m{width:6px;height:6px;border-radius:50%;background:var(--ink)}
+.day .m.hol{background:var(--warn)}
+.day .m.term{background:#2d6ea3}
+.day .m.swap{background:#8a7bb8}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+/* messages */
+.chat{display:flex;flex-direction:column;gap:10px;padding-bottom:8px}
+.msg{max-width:82%;padding:9px 12px;border-radius:14px;background:var(--card);border:1px solid var(--line);align-self:flex-start;position:relative}
+.msg.mine{align-self:flex-end;background:var(--me-soft);border-color:transparent}
+.msg.removed{font-style:italic;color:var(--muted);background:none}
+.msg .meta{font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.msg .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.msg .acts button{border:1px solid var(--line);background:#fff;border-radius:999px;font-size:12px;padding:3px 9px}
+.react{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:12px;padding:0 6px;margin-top:4px}
+.urgent{color:var(--warn);font-weight:700;font-size:12px}
+.composer{position:fixed;bottom:58px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--line);padding:8px 10px;z-index:19}
+.composer .line{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-height:44px;max-height:120px;border:1px solid var(--line);border-radius:12px;padding:10px;resize:none}
+.composer .opts{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;white-space:nowrap;min-height:36px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+/* money */
+.bal{text-align:center;padding:18px}
+.amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+/* kids */
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.quick .card{margin:0}
+.acc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.acc summary{padding:14px;font-weight:600;list-style:none;display:flex;justify-content:space-between;min-height:var(--tap);align-items:center}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";color:var(--muted);font-size:20px}
+.acc[open] summary::after{content:"–"}
+.acc .body{padding:0 14px 14px;font-size:15px}
+.kv{display:grid;grid-template-columns:42% 1fr;gap:6px 10px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.ecard{background:#fff;border:3px solid var(--warn);border-radius:16px;padding:16px}
+.ecard h2{color:var(--warn);margin-top:0}
+.ecard .sec{border-top:1px solid var(--line);padding:10px 0}
+.ecard .sec b{display:block;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:2px}
+/* overlay */
+.overlay{position:fixed;inset:0;background:rgba(20,25,28,.45);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:430px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 24px}
+.sheet .grab{width:40px;height:4px;background:#bbb;border-radius:4px;margin:-6px auto 12px}
+.sheet h2{margin-top:0}
+.dialog{align-items:center;padding:20px}
+.dialog .sheet{border-radius:18px;max-width:360px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:90%;text-align:center}
+.signup{padding:24px 18px}
+.signup .logo{font-size:26px;font-weight:800;margin:24px 0 6px}
+.steps{display:flex;gap:4px;margin-bottom:18px}
+.steps i{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.steps i.on{background:var(--accent)}
+.tabs2{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0}
+.tabs2 button{flex:1;border:0;background:#fff;min-height:42px}
+.tabs2 button.on{background:var(--accent);color:#fff}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f0eee8;padding:2px 6px;border-radius:6px;word-break:break-all}
+hr.s{border:0;border-top:1px solid var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+<div id="app" class="phone"></div>
+<script>
+/* ============================================================
+   THROWAWAY PROTOTYPE. Plain HTML, CSS and JS. No backend.
+   Sample data lives in localStorage. All names are invented.
+   ============================================================ */
+const APP_NAME = 'APP_NAME';
+document.title = APP_NAME + ' prototype';
+const STORE = 'coparent-prototype-v1';
+
+/* ---------- What each mode switches on (mirrors the planned modes.ts) ---------- */
+const MODES = {
+  cooperative: {
+    label: 'Cooperative',
+    wordCheck: false,
+    editWindowMin: 5,
+    reactions: true,
+    removeFromView: true,
+    topicRequired: false,
+    quietHours: null,
+    floodLimit: null,
+    detailedReceipts: false,
+    scheduleLocked: false,
+    swapReasonRequired: false,
+    requestExpiryHours: null,
+    receiptRequired: false,
+    autoApproveUnder: 500,
+    queryReasonRequired: false,
+    handoverCheckIn: false,
+    handoverNotes: true,
+    packingList: true,
+    todos: true,
+    journal: false,
+    notifyMedicalChange: false,
+  },
+  high_conflict: {
+    label: 'High-conflict',
+    wordCheck: true,
+    editWindowMin: 0,
+    reactions: false,
+    removeFromView: false,
+    topicRequired: true,
+    quietHours: { from: 20, to: 7 },
+    floodLimit: { count: 5, minutes: 10 },
+    detailedReceipts: true,
+    scheduleLocked: true,
+    swapReasonRequired: true,
+    requestExpiryHours: 48,
+    receiptRequired: true,
+    autoApproveUnder: 0,
+    queryReasonRequired: true,
+    handoverCheckIn: true,
+    handoverNotes: false,
+    packingList: false,
+    todos: false,
+    journal: true,
+    notifyMedicalChange: true,
+  },
+};
+
+/* ---------- Word check list (English and Afrikaans). Sample only. ---------- */
+const WORDS = ['idiot','stupid','useless','pathetic','moron','liar','loser','bitch','bastard','fuck','fucking','shit','crap','dumb','hate','idioot','dom','kak','fok','fokken','poes','doos','bliksem','vark','sleg','bek','hol','gat','pateties','leuenaar'];
+function wordCheck(text){
+  const lower = text.toLowerCase();
+  return WORDS.some(w => new RegExp('(^|[^\\p{L}])' + w + '($|[^\\p{L}])', 'u').test(lower));
+}
+
+/* ---------- Dates and money, SA style ---------- */
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAY = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const fDate = d => { d = typeof d === 'string' ? (d.length===10?parse(d):new Date(d)) : d; return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear(); };
+const fDay = d => { d = typeof d === 'string' ? parse(d) : d; return DAY[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()]; };
+const fTime = t => { const d = new Date(t); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+const fStamp = t => fDate(new Date(t))+', '+fTime(t);
+const R = n => { const neg = n<0; n = Math.abs(n); const [a,b] = n.toFixed(2).split('.'); return (neg?'-':'')+'R'+a.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+'.'+b; };
+const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const age = dob => { const b = parse(dob), n = new Date(); let a = n.getFullYear()-b.getFullYear(); if (n < new Date(n.getFullYear(), b.getMonth(), b.getDate())) a--; return a; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2,9);
+function fakeHash(s){ let h1=0x811c9dc5,h2=0x1234567; for (const c of s){ h1=Math.imul(h1^c.charCodeAt(0),16777619); h2=Math.imul(h2+c.charCodeAt(0),2654435761);} return ((h1>>>0).toString(16).padStart(8,'0')+(h2>>>0).toString(16).padStart(8,'0')); }
+
+const NOW = () => new Date();
+const ago = (mins) => new Date(Date.now() - mins*60000).toISOString();
+const TODAY = iso(new Date());
+
+/* ---------- SA calendar (sample: check the real 2026/2027 dates before the build) ---------- */
+const HOLIDAYS = {
+  '2026-12-16':'Day of Reconciliation','2026-12-25':'Christmas Day','2026-12-26':'Day of Goodwill',
+  '2027-01-01':"New Year's Day",'2027-03-21':'Human Rights Day','2027-03-22':'Public holiday (Human Rights Day observed)',
+  '2026-09-24':'Heritage Day','2026-08-09':"National Women's Day",'2026-08-10':'Public holiday',
+};
+const TERMS = { '2026-12-09':'Schools close (end of Term 4)', '2027-01-13':'Schools open (Term 1)' };
+const SPECIAL = { '2026-12-25':'Christmas: alternate years. 2026 is with you', '2026-12-04':'Mia’s birthday: other parent has 15:00 to 18:00' };
+
+/* ---------- Sample data ---------- */
+function seed(){
+  // Week on, week off. Handover every Friday 17:00. The week starting on the anchor Friday is yours.
+  const t = new Date(); const back = (t.getDay()+2)%7; // days since last Friday
+  const anchor = iso(addDays(t, -back));
+  const me = 'Naledi', other = 'Johan';
+  const s = {
+    signedUp:false, mode:'cooperative', me, other, solo:false,
+    anchor, firstWeek: back===0 ? 'me' : 'other', overrides:{},
+    handover:{ time:'17:00', place:'Greenway Primary, main gate' },
+    checkIns:[ {at: addDays(t,-7).toISOString().slice(0,10)+'T17:12:00', who:'other', late:12, place:'Greenway Primary (one-off stamp)'} ],
+    children:[
+      { id:'c1', name:'Mia van Wyk', short:'Mia', dob:'2018-12-04', school:'Greenway Primary', grade:'Grade 2', teacher:'Mrs Pillay',
+        allergies:[{ what:'Peanuts', reaction:'Swelling of lips and face, hives', action:'Give antihistamine. EpiPen is in the red school bag pocket. If breathing is hard, use the EpiPen and call 10177.' }],
+        blood:'O+', weight:'24 kg (Oct 2026)',
+        conditions:[{ what:'Mild asthma', manage:'Two puffs of inhaler before sport and when wheezy' }],
+        meds:[{ name:'Asthavent inhaler', dose:'2 puffs', times:'Before sport, or when wheezy', by:'Dr S. Naidoo' }],
+        aid:{ scheme:'Sample Medical Scheme', plan:'Family Core', number:'000 123 456', main:'Naledi van Wyk', dep:'02' },
+        doctors:[{ role:'GP', name:'Dr S. Naidoo', phone:'021 555 0101', where:'Rondebosch Medical Centre' },{ role:'Dentist', name:'Dr K. Botha', phone:'021 555 0144', where:'Claremont' },{ role:'Paediatrician', name:'Dr A. Mokoena', phone:'021 555 0177', where:'Sample Hospital' }],
+        visits:[
+          { date:'2026-10-28', doctor:'Dr S. Naidoo', reason:'Chesty cough and fever', outcome:'Mild bronchitis', meds:'Antibiotic, 5 days', follow:'2026-11-11', took:'Johan', file:'Script.pdf' },
+          { date:'2026-06-14', doctor:'Dr K. Botha', reason:'Check-up', outcome:'All fine, one filling next visit', meds:'None', follow:'2026-12-10', took:'Naledi', file:'' },
+        ],
+        vacc:[{ what:'6-year boosters (Td, MMR)', date:'2024-12-10' },{ what:'Flu vaccine', date:'2026-04-22' }],
+        contacts:[{ name:'Naledi (mother)', phone:'Number hidden in the app', note:'Shown on the shared emergency card only' },{ name:'Johan (father)', phone:'Number hidden in the app', note:'Shown on the shared emergency card only' },{ name:'Ruth Daniels (gran)', phone:'082 555 0199', note:'' }],
+        daily:{ clothes:'Age 7 to 8', shoes:'Size 13 (kids)', diet:'No peanuts. Not keen on mushrooms', bedtime:'19:30, bath, story, lights out 20:00', comfort:'Grey bunny called Mr Flop' },
+        schoolInfo:{ office:'021 555 0130', aftercare:'Until 17:30, Mon to Fri', timetable:'07:45 to 13:30 (Fri 12:30)', extra:'Swimming Tue 14:30, Art Thu 14:00' },
+      },
+      { id:'c2', name:'Ben van Wyk', short:'Ben', dob:'2021-05-19', school:'Little Acorns Pre-Primary', grade:'Grade 00', teacher:'Ms Jacobs',
+        allergies:[], blood:'A+', weight:'18 kg (Aug 2026)', conditions:[], meds:[],
+        aid:{ scheme:'Sample Medical Scheme', plan:'Family Core', number:'000 123 456', main:'Naledi van Wyk', dep:'03' },
+        doctors:[{ role:'GP', name:'Dr S. Naidoo', phone:'021 555 0101', where:'Rondebosch Medical Centre' }],
+        visits:[{ date:'2026-09-02', doctor:'Dr S. Naidoo', reason:'Ear ache', outcome:'Ear infection', meds:'Ear drops, 7 days', follow:'', took:'Naledi', file:'Sick note.pdf' }],
+        vacc:[{ what:'18-month boosters', date:'2022-11-20' }],
+        contacts:[{ name:'Naledi (mother)', phone:'Number hidden in the app', note:'' },{ name:'Johan (father)', phone:'Number hidden in the app', note:'' },{ name:'Ruth Daniels (gran)', phone:'082 555 0199', note:'' }],
+        daily:{ clothes:'Age 5 to 6', shoes:'Size 10 (kids)', diet:'None', bedtime:'19:00, story and song', comfort:'Blue blanket' },
+        schoolInfo:{ office:'021 555 0160', aftercare:'Until 17:00', timetable:'07:30 to 12:30', extra:'Soccer Wed 13:30' },
+      },
+    ],
+    events:[
+      { id:uid(), date:iso(addDays(t,1)), time:'09:00', title:'Mia swimming gala', place:'Newlands pool', kid:'Mia', notes:'Bring towel and goggles', by:'other' },
+      { id:uid(), date:iso(addDays(t,3)), time:'14:00', title:'Ben soccer', place:'Little Acorns field', kid:'Ben', notes:'', by:'me' },
+      { id:uid(), date:iso(addDays(t,6)), time:'15:30', title:'Dentist (Mia)', place:'Dr K. Botha, Claremont', kid:'Mia', notes:'Filling', by:'me' },
+      { id:uid(), date:iso(addDays(t,10)), time:'18:00', title:'School concert', place:'Greenway Primary hall', kid:'Mia', notes:'Both parents welcome', by:'other' },
+      { id:uid(), date:TODAY, time:'14:00', title:'Art class', place:'Greenway Primary', kid:'Mia', notes:'', by:'me' },
+    ],
+    requests:[
+      { id:'r1', from:'other', kind:'swap', dates:[iso(addDays(t,8)), iso(addDays(t,15))], text:'Swap '+fDay(addDays(t,8))+' for '+fDay(addDays(t,15)), reason:'My cousin’s wedding in Durban that weekend.', status:'pending', at:ago(70) },
+    ],
+    topics:['Schedule','School','Medical','Money','General'],
+    messages:[
+      { id:uid(), topic:'School', from:'other', text:'The school concert is on the 23rd at 18:00. I can bring the costume.', at:ago(60*26), deliveredAt:ago(60*26), readAt:ago(60*25), revisions:[], removed:false, urgent:false, reactions:[] },
+      { id:uid(), topic:'School', from:'me', text:'Thanks. I’ll be there too. She needs black shoes for it.', at:ago(60*25-5), deliveredAt:ago(60*25-5), readAt:ago(60*24), revisions:[], removed:false, urgent:false, reactions:['👍'] },
+      { id:uid(), topic:'Medical', from:'other', text:'Follow-up with Dr Naidoo went well. Chest is clear. Script is in the visit log.', at:ago(60*5), deliveredAt:ago(60*5), readAt:null, revisions:[], removed:false, urgent:false, reactions:[] },
+      { id:uid(), topic:'Schedule', from:'other', text:'I sent a swap request for the weekend after next. Let me know.', at:ago(68), deliveredAt:ago(68), readAt:null, revisions:[], removed:false, urgent:false, reactions:[] },
+      { id:uid(), topic:'Money', from:'me', text:'Uploaded the receipt for swimming lessons.', at:ago(60*48), deliveredAt:ago(60*48), readAt:ago(60*47), revisions:[], removed:false, urgent:false, reactions:[] },
+    ],
+    split:{ me:50, other:50 },
+    expenses:[
+      { id:'e1', title:'School shoes', cat:'Clothing', kid:'Mia', amount:649.90, paidBy:'other', split:50, receipt:true, status:'pending', at:ago(60*20), notes:'Black shoes for the concert and school' },
+      { id:'e2', title:'Swimming lessons, Nov', cat:'Activities', kid:'Mia', amount:480, paidBy:'me', split:50, receipt:true, status:'approved', auto:true, at:ago(60*48) },
+      { id:'e3', title:'GP visit', cat:'Medical', kid:'Mia', amount:720, paidBy:'me', split:50, receipt:true, status:'queried', query:'Was this claimed from medical aid first?', at:ago(60*24*12) },
+      { id:'e4', title:'School fees, Nov', cat:'School', kid:'Mia', amount:3200, paidBy:'me', split:50, receipt:true, status:'approved', recurring:true, at:ago(60*24*12) },
+    ],
+    payments:[ { id:'p1', from:'other', to:'me', amount:1000, at:ago(60*24*8), proof:'EFT proof.pdf', note:'Part of October costs' } ],
+    maintenance:{ amount:2500, due:1, payer:'other', rows:[
+      { month:'Sep 2026', paid:2500, date:'2026-09-01' },
+      { month:'Oct 2026', paid:2500, date:'2026-10-06' },
+      { month:'Nov 2026', paid:2000, date:'2026-11-03' },
+    ]},
+    recurring:[ { title:'School fees', amount:3200, day:1, kid:'Mia' }, { title:'Medical aid (children)', amount:1850, day:1, kid:'Both' }, { title:'Aftercare', amount:950, day:1, kid:'Mia' } ],
+    todos:[ { id:uid(), text:'Sign school trip form', who:'me', done:false }, { id:uid(), text:'Buy Ben a birthday gift for Liam’s party', who:'other', done:false }, { id:uid(), text:'Order Mia’s winter uniform', who:'me', done:true } ],
+    packing:[ { t:'School bag', on:true },{ t:'Inhaler', on:true },{ t:'EpiPen', on:false },{ t:'Mr Flop', on:false },{ t:'Swimming kit', on:true },{ t:'Homework book', on:false } ],
+    handoverNotes:[ { at:ago(60*24*7), from:'other', text:'Both ate well. Mia finished her antibiotics on Tuesday. Ben has a spelling sheet due Monday.' } ],
+    journal:[ { id:uid(), at:ago(60*24*3), text:'Handover on Friday was 12 minutes late. No message beforehand.', photo:false } ],
+    documents:[ { name:'Parenting plan (signed 3 Mar 2026)', kind:'Plan or order', pinned:true }, { name:'Mia birth certificate', kind:'Birth certificate' }, { name:'Ben birth certificate', kind:'Birth certificate' }, { name:'Mia passport', kind:'Passport' }, { name:'Medical aid card', kind:'Medical aid' }, { name:'Mia Term 3 report', kind:'School report' } ],
+    log:[],
+    modeRequest:null,
+    sentTimes:[],
+    tab:'today', ui:{},
+  };
+  return s;
+}
+
+let S = load();
+function load(){ try { const x = JSON.parse(localStorage.getItem(STORE)); if (x && x.children) { x.ui = { ...(x.ui||{}), toast:null, sheet:null }; return x; } } catch(e){} const s = seed(); seedLog(s); return s; }
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(S)); } catch(e){} }
+function seedLog(s){
+  s.log = [];
+  const add = (mins, who, what) => pushLog(s, who, what, ago(mins));
+  add(60*24*12, 'me', 'Added expense: School fees, Nov (R3 200.00)');
+  add(60*24*12, 'me', 'Added expense: GP visit (R720.00)');
+  add(60*24*11, 'other', 'Queried expense: GP visit');
+  add(60*24*8, 'other', 'Recorded payment: R1 000.00 with proof');
+  add(60*24*7, 'other', 'Handover check-in, 12 minutes late');
+  add(60*48, 'me', 'Added expense: Swimming lessons, Nov (R480.00)');
+  add(60*20, 'other', 'Added expense: School shoes (R649.90)');
+  add(70, 'other', 'Sent change request: swap two weekends');
+}
+function pushLog(s, who, what, at){
+  const prev = s.log.length ? s.log[s.log.length-1].hash : '0'.repeat(16);
+  at = at || NOW().toISOString();
+  s.log.push({ at, who, what, prev, hash: fakeHash(prev+at+who+what) });
+}
+function log(what, who='me'){ pushLog(S, who, what); }
+
+const M = () => MODES[S.mode];
+const nameOf = w => w==='me' ? 'You' : S.other;
+const kids = () => S.children.map(c=>c.short).join(' and ');
+
+/* ---------- Care schedule ---------- */
+function careOn(dateStr){
+  if (S.overrides[dateStr]) return S.overrides[dateStr];
+  const d = parse(dateStr), a = parse(S.anchor);
+  const weeks = Math.floor(Math.round((d - a)/86400000)/7);
+  const even = ((weeks % 2) + 2) % 2 === 0;
+  return even ? S.firstWeek : (S.firstWeek==='me'?'other':'me');
+}
+function nextHandover(){
+  for (let i=0;i<14;i++){ const d = iso(addDays(new Date(), i)); const prev = iso(addDays(parse(d), -1)); if (careOn(d)!==careOn(prev)) return { date:d, to:careOn(d), from:careOn(prev) }; }
+  return null;
+}
+
+/* ---------- Rendering ---------- */
+const app = document.getElementById('app');
+function render(){
+  document.body.classList.toggle('hc', S.mode==='high_conflict');
+  app.innerHTML = S.signedUp ? shell() : signup();
+  save();
+}
+function protoBar(){
+  return `<div class="proto"><b>Prototype</b>
+    <span class="seg"><button data-a="protoMode" data-v="cooperative" class="${S.mode==='cooperative'?'on':''}">Cooperative</button><button data-a="protoMode" data-v="high_conflict" class="${S.mode==='high_conflict'?'on':''}">High-conflict</button></span>
+    <button class="reset" data-a="reset">Reset</button></div>`;
+}
+function shell(){
+  const unread = S.solo ? 0 : S.messages.filter(m=>m.from==='other' && !m.readAt).length;
+  const tabs = [['today','◐','Today'],['calendar','▦','Calendar'],['messages','✉','Messages',unread],['money','R','Money',attentionMoney()],['kids','☺','Kids']];
+  const titles = { today:'Today', calendar:'Calendar', messages:'Messages', money:'Money', kids:'Kids' };
+  return protoBar() + `
+  <header class="top"><h1>${S.ui.chatTopic && S.tab==='messages' ? `<button class="iconbtn" style="display:inline-grid;width:32px;height:32px;margin-right:6px;font-size:15px" data-a="closeTopic">‹</button>${esc(S.ui.chatTopic)}` : titles[S.tab]}</h1><span class="badge">${M().label}</span><button class="iconbtn" data-a="sheet" data-v="more" aria-label="More">☰</button></header>
+  <main>${ ({today, calendar, messages, money, kidsTab})[S.tab==='kids'?'kidsTab':S.tab]() }</main>
+  ${S.tab==='messages' && S.ui.chatTopic && !S.solo ? composer() : ''}
+  <nav class="tabs">${tabs.map(([k,ic,l,n])=>`<button data-a="tab" data-v="${k}" class="${S.tab===k?'on':''}"><span class="ic">${ic}</span>${l}${n?`<span class="dot">${n}</span>`:''}</button>`).join('')}</nav>
+  ${S.ui.sheet ? overlay() : ''}
+  ${S.ui.toast ? `<div class="toast">${esc(S.ui.toast)}</div>` : ''}`;
+}
+function attentionMoney(){ return S.expenses.filter(e=>e.paidBy==='other' && e.status==='pending').length; }
+
+/* ---------- Sign-up ---------- */
+function signup(){
+  const st = S.ui.step || 0, f = S.ui.form || (S.ui.form = { via:'email', mode:'cooperative', child:'Mia van Wyk', dob:'2018-12-04', consent:false });
+  const steps = `<div class="steps">${[0,1,2,3,4].map(i=>`<i class="${i<=st?'on':''}"></i>`).join('')}</div>`;
+  let body = '';
+  if (st===0) body = `
+    <div class="logo">${APP_NAME}</div>
+    <p class="muted">One place for the children’s calendar, messages, money and info. Built for South African families living in two homes.</p>
+    <div class="tabs2"><button data-a="via" data-v="email" class="${f.via==='email'?'on':''}">Email</button><button data-a="via" data-v="phone" class="${f.via==='phone'?'on':''}">Phone</button></div>
+    <label class="f">${f.via==='email'?'Email address':'Cell number'}</label>
+    <input class="f" placeholder="${f.via==='email'?'you@example.co.za':'082 000 0000'}" value="">
+    <label class="f">Password</label><input class="f" type="password" value="">
+    <div class="btns"><button class="btn block" data-a="step" data-v="1">Continue</button></div>
+    <p class="small muted" style="text-align:center">Prototype: type anything, nothing is sent.</p>
+    <p style="text-align:center"><button class="btn ghost sm" data-a="skipSignup">Skip to the app with sample data</button></p>`;
+  if (st===1) body = `
+    <h2>Check your ${f.via==='email'?'email':'phone'}</h2>
+    <p class="muted">We sent a 6-digit code. This is the second step of your login, so nobody else can sign in as you.</p>
+    <label class="f">Code</label><input class="f" inputmode="numeric" placeholder="000000" maxlength="6">
+    <div class="btns"><button class="btn ghost" data-a="step" data-v="0">Back</button><button class="btn" data-a="step" data-v="2">Verify</button></div>`;
+  if (st===2) body = `
+    <h2>Before we start</h2>
+    <div class="card"><b>Everything is kept</b><p class="small" style="margin:6px 0 0">Every message, change, handover, expense and payment is saved with a time from our server. Messages can’t be deleted from the record. Either parent can export the full record at any time.</p></div>
+    <div class="card"><div class="legal">LEGAL-REVIEW</div><b>Your children’s information</b><p class="small" style="margin:6px 0 0">You’re about to add information about your children, including health information. We store it to help both parents care for them, and protect it as POPIA requires. Data is stored in Europe.</p>
+    <label class="check"><input type="checkbox" data-a="consent" ${f.consent?'checked':''}> I’m a parent or legal guardian, and I consent to this information being stored and shared with my co-parent in this app.</label></div>
+    <div class="btns"><button class="btn ghost" data-a="step" data-v="1">Back</button><button class="btn" data-a="step" data-v="3" ${f.consent?'':'disabled'}>Agree and continue</button></div>`;
+  if (st===3) body = `
+    <h2>How do you and your co-parent get along?</h2>
+    <p class="muted small">This changes how the app looks and which tools show. Both modes keep the same full record. You can change it later.</p>
+    <button class="choice ${f.mode==='cooperative'?'on':''}" data-a="pickMode" data-v="cooperative"><b>Cooperative</b><span class="small">We mostly get along. Keep it simple and friendly: quick swaps, shared to-dos, fix a typo after sending.</span></button>
+    <button class="choice ${f.mode==='high_conflict'?'on':''}" data-a="pickMode" data-v="high_conflict"><b>High-conflict</b><span class="small">We need distance and clear rules. Locked messages, set topics, quiet hours, formal requests and a private journal.</span></button>
+    <div class="btns"><button class="btn ghost" data-a="step" data-v="2">Back</button><button class="btn" data-a="step" data-v="4">Continue</button></div>`;
+  if (st===4) body = `
+    <h2>Add your first child</h2>
+    <label class="f">Full name</label><input class="f" id="childName" value="${esc(f.child)}">
+    <label class="f">Date of birth</label><input class="f" id="childDob" type="date" value="${esc(f.dob)}">
+    <hr class="s">
+    <h2 style="font-size:18px">Invite your co-parent</h2>
+    <p class="small muted">They join with a link. You never need to swap phone numbers.</p>
+    <div class="card small"><span class="code">https://app.example/join/7Q4-KD9</span></div>
+    <div class="btns"><button class="btn" data-a="finish" data-v="invite">Copy link and continue</button></div>
+    <div class="btns"><button class="btn ghost" data-a="finish" data-v="solo">Use it on my own for now</button></div>
+    <p class="small muted">On your own, records start today. Your co-parent can join later.</p>`;
+  return `<div class="signup">${steps}${body}</div>${S.ui.toast?`<div class="toast">${esc(S.ui.toast)}</div>`:''}`;
+}
+
+/* ---------- Today ---------- */
+function today(){
+  const who = careOn(TODAY), nh = nextHandover();
+  const pendReq = S.requests.filter(r=>r.status==='pending' && r.from==='other');
+  const pendExp = S.expenses.filter(e=>e.status==='pending' && e.paidBy==='other');
+  const unread = S.solo ? 0 : S.messages.filter(m=>m.from==='other' && !m.readAt).length;
+  const evs = S.events.filter(e=>e.date>=TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4);
+  const hToday = nh && nh.date===TODAY;
+  const checked = S.checkIns.find(c=>c.at.slice(0,10)===TODAY && c.who==='me');
+  let h = '';
+  if (S.solo) h += `<div class="banner">${S.other} hasn’t joined yet. Your records are being kept from today. <div class="btns"><button class="btn sm" data-a="toast" data-v="Invite link copied">Copy invite link</button><button class="btn sm ghost" data-a="joinOther">Prototype: ${S.other} joins</button></div></div>`;
+  h += `<div class="card"><div class="muted small">${fDay(TODAY)} ${new Date().getFullYear()}</div>
+    <div class="who" style="margin-top:8px"><div class="av ${hToday?nh.from:who}">${(hToday?nh.from:who)==='me'?'N':'J'}</div><div><div class="big">${hToday ? (nh.from==='me'?'With you':'With '+S.other)+' until '+S.handover.time : (who==='me'?'With you today':'With '+S.other+' today')}</div><div class="muted small">${kids()}${hToday?' · then with '+(nh.to==='me'?'you':S.other):''}</div></div></div></div>`;
+  if (nh) {
+    h += `<h3>Next handover</h3><div class="card"><div class="who"><div><div style="font-weight:700">${fDay(nh.date)}, ${S.handover.time}</div><div class="small muted">${nh.from==='me'?'You':S.other} → ${nh.to==='me'?'you':S.other} · ${S.handover.place}</div></div></div>`;
+    if (M().handoverCheckIn) h += hToday
+      ? (checked ? `<div class="banner" style="margin:10px 0 0">You checked in at ${fTime(checked.at)}. The time and a one-off location stamp were recorded.</div>` : `<div class="btns"><button class="btn" data-a="sheet" data-v="checkin">Check in at handover</button></div>`)
+      : `<p class="small muted" style="margin:8px 0 0">Check-in opens on the day. It records the time and a one-off location stamp.</p>`;
+    if (M().handoverNotes || M().packingList) h += `<div class="btns">${M().handoverNotes?`<button class="btn ghost sm" data-a="sheet" data-v="handoverNote">Handover note</button>`:''}${M().packingList?`<button class="btn ghost sm" data-a="sheet" data-v="packing">Packing list (${S.packing.filter(p=>p.on).length}/${S.packing.length})</button>`:''}</div>`;
+    h += `</div>`;
+  }
+  if (M().handoverNotes && S.handoverNotes.length){ const n = S.handoverNotes[S.handoverNotes.length-1]; h += `<div class="card small"><b>Last handover note</b> <span class="muted">from ${nameOf(n.from)}, ${fDate(n.at)}</span><p style="margin:6px 0 0">${esc(n.text)}</p></div>`; }
+  if (pendReq.length || pendExp.length || unread) {
+    h += `<h3>Needs you</h3><div class="card tight">`;
+    pendReq.forEach(r=> h += `<button class="row" data-a="sheet" data-v="request" data-id="${r.id}"><span class="pill wait">Change</span><span class="grow">${esc(r.text)}<div class="sub">From ${S.other}${M().requestExpiryHours?' · expires '+fStamp(new Date(new Date(r.at).getTime()+M().requestExpiryHours*3600000)):''}</div></span><span class="chev">›</span></button>`);
+    pendExp.forEach(e=> h += `<button class="row" data-a="sheet" data-v="expense" data-id="${e.id}"><span class="pill wait">Expense</span><span class="grow">${esc(e.title)} <span class="amt">${R(e.amount)}</span><div class="sub">Approve or query</div></span><span class="chev">›</span></button>`);
+    if (unread) h += `<button class="row" data-a="tab" data-v="messages"><span class="pill info">Messages</span><span class="grow">${unread} unread</span><span class="chev">›</span></button>`;
+    h += `</div>`;
+  }
+  h += `<h3>What’s on</h3><div class="card tight">${evs.map(e=>`<button class="row" data-a="sheet" data-v="event" data-id="${e.id}"><span style="width:58px" class="small"><b>${e.date===TODAY?'Today':fDay(e.date).slice(0,3)+' '+parse(e.date).getDate()}</b><br>${e.time}</span><span class="grow">${esc(e.title)}<div class="sub">${esc(e.place)}</div></span><span class="chev">›</span></button>`).join('') || '<div class="row muted">Nothing planned</div>'}</div>`;
+  if (M().todos) {
+    h += `<h3>Shared to-dos</h3><div class="card tight">${S.todos.map(t=>`<label class="row"><input type="checkbox" data-a="todo" data-id="${t.id}" ${t.done?'checked':''} style="width:22px;height:22px"><span class="grow" style="${t.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.text)}</span><span class="pill">${nameOf(t.who)}</span></label>`).join('')}
+      <div class="row"><input class="f" id="todoText" placeholder="Add a to-do" style="min-height:40px"><button class="btn sm" data-a="addTodo">Add</button></div></div>`;
+  }
+  if (M().journal) h += `<h3>Private journal</h3><div class="card"><p class="small muted" style="margin-top:0">Only you can see this. Notes are timestamped by the server.</p><button class="btn ghost block" data-a="sheet" data-v="journal">Open journal (${S.journal.length})</button></div>`;
+  return h;
+}
+
+/* ---------- Calendar ---------- */
+function calendar(){
+  const base = S.ui.calMonth ? parse(S.ui.calMonth) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const y = base.getFullYear(), m = base.getMonth();
+  const first = new Date(y,m,1), start = addDays(first, -((first.getDay()+6)%7));
+  let h = '';
+  if (M().scheduleLocked) h += `<div class="banner lock">🔒 The care schedule follows your parenting plan (signed 3 Mar 2026). It can’t be edited directly. Use a formal change request.</div>`;
+  h += `<div class="card"><div class="calhead"><button class="iconbtn" data-a="calNav" data-v="-1">‹</button><b>${['January','February','March','April','May','June','July','August','September','October','November','December'][m]} ${y}</b><button class="iconbtn" data-a="calNav" data-v="1">›</button></div>
+    <div class="grid">${['M','T','W','T','F','S','S'].map(d=>`<div class="dow">${d}</div>`).join('')}`;
+  for (let i=0;i<42;i++){
+    const d = addDays(start,i), ds = iso(d), c = careOn(ds);
+    const marks = [];
+    if (S.events.some(e=>e.date===ds)) marks.push('<i class="m"></i>');
+    if (HOLIDAYS[ds]) marks.push('<i class="m hol"></i>');
+    if (TERMS[ds]) marks.push('<i class="m term"></i>');
+    if (S.overrides[ds]) marks.push('<i class="m swap"></i>');
+    h += `<button class="day ${c} ${d.getMonth()!==m?'out':''} ${ds===TODAY?'today':''}" data-a="sheet" data-v="day" data-id="${ds}">${d.getDate()}<span class="marks">${marks.join('')}</span></button>`;
+  }
+  h += `</div><div class="legend"><span><i class="sw" style="background:var(--me-soft);border:1px solid var(--me)"></i>You</span><span><i class="sw" style="background:var(--other-soft);border:1px solid var(--other)"></i>${S.other}</span><span><i class="m" style="width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block"></i>Event</span><span><i style="width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block"></i>Public holiday</span><span><i style="width:8px;height:8px;border-radius:50%;background:#2d6ea3;display:inline-block"></i>School term</span><span><i style="width:8px;height:8px;border-radius:50%;background:#8a7bb8;display:inline-block"></i>Changed day</span></div></div>`;
+  h += `<div class="btns" style="margin-top:0"><button class="btn" data-a="sheet" data-v="newRequest">${M().swapReasonRequired?'Request a change':'Ask for a swap'}</button><button class="btn ghost" data-a="sheet" data-v="newEvent">Add event</button></div>`;
+  h += `<h3>Schedule</h3><div class="card small"><b>Week on, week off</b><div class="muted">Handover Fridays at ${S.handover.time}, ${esc(S.handover.place)}</div><hr class="s"><b>Special days</b><div class="muted">Christmas alternates each year (2026 with you). Birthdays: the other parent has 15:00 to 18:00. Mother’s Day with Naledi, Father’s Day with Johan.</div>${M().scheduleLocked?'':'<div class="btns"><button class="btn ghost sm" data-a="toast" data-v="Prototype: template picker (week on/off, 2-2-3, alternate weekends, custom)">Change template</button></div>'}</div>`;
+  const reqs = S.requests.slice().reverse();
+  h += `<h3>Change requests</h3><div class="card tight">${reqs.map(r=>`<button class="row" data-a="sheet" data-v="request" data-id="${r.id}"><span class="grow">${esc(r.text)}<div class="sub">${r.from==='me'?'You asked':S.other+' asked'} · ${fStamp(r.at)}</div></span>${statusPill(r.status)}</button>`).join('') || '<div class="row muted">None</div>'}</div>`;
+  return h;
+}
+function statusPill(s){ return ({pending:'<span class="pill wait">Waiting</span>',accepted:'<span class="pill ok">Accepted</span>',declined:'<span class="pill warn">Declined</span>',expired:'<span class="pill">Expired</span>',approved:'<span class="pill ok">Approved</span>',queried:'<span class="pill warn">Queried</span>',paid:'<span class="pill ok">Paid</span>'})[s] || s; }
+
+/* ---------- Messages ---------- */
+function messages(){
+  if (S.solo) return `<div class="card"><b>Messages start when ${S.other} joins</b><p class="small muted">You’ll talk in the app, so neither of you sees the other’s number or email.</p><button class="btn block" data-a="toast" data-v="Invite link copied">Copy invite link</button></div>`;
+  const topics = S.topics.filter(t => !(M().topicRequired && t==='General'));
+  if (!S.ui.chatTopic) {
+    let h = '';
+    if (M().quietHours) h += `<div class="banner lock">Quiet hours ${pad(M().quietHours.from)}:00 to ${pad(M().quietHours.to)}:00. Messages sent then arrive at ${pad(M().quietHours.to)}:00 unless marked urgent.</div>`;
+    h += `<p class="small muted" style="margin-top:0">${M().topicRequired?'Every message sits under a topic.':'Keep school, medical, money and schedule talk apart.'}</p><div class="card tight">`;
+    topics.forEach(t=>{
+      const ms = S.messages.filter(m=>m.topic===t); const last = ms[ms.length-1];
+      const un = ms.filter(m=>m.from==='other'&&!m.readAt).length;
+      h += `<button class="row" data-a="openTopic" data-v="${t}"><span class="av kid" style="width:38px;height:38px;font-size:14px;background:var(--accent)">${t[0]}</span><span class="grow"><b>${t}</b><div class="sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${last? (last.removed?'Removed from view':esc(lastText(last))) : 'No messages yet'}</div></span>${un?`<span class="pill warn">${un}</span>`:''}<span class="chev">›</span></button>`;
+    });
+    if (S.mode==='high_conflict' && S.messages.some(m=>m.topic==='General')) h += `<div class="row small muted">Older messages under General stay in the record and the export.</div>`;
+    return h + `</div>`;
+  }
+  // mark read
+  S.messages.forEach(m=>{ if (m.topic===S.ui.chatTopic && m.from==='other' && !m.readAt) m.readAt = NOW().toISOString(); });
+  const list = S.messages.filter(m=>m.topic===S.ui.chatTopic);
+  let h = '';
+  if (S.mode==='high_conflict') h += `<div class="banner lock">🔒 Messages are locked. They can’t be edited or deleted after sending.</div>`;
+  h += `<div class="chat" style="padding-bottom:${S.mode==='high_conflict'?120:90}px">`;
+  list.forEach(m=>{
+    const mine = m.from==='me', txt = lastText(m), edited = m.revisions.length>0;
+    const canEdit = mine && M().editWindowMin && (Date.now()-new Date(m.at).getTime()) < M().editWindowMin*60000 && !m.removed;
+    if (m.removed && S.mode==='cooperative') { h += `<div class="msg ${mine?'mine':''} removed">Message removed from view<div class="meta">${fTime(m.at)} · kept in the record</div></div>`; return; }
+    h += `<div class="msg ${mine?'mine':''}">${m.urgent?'<div class="urgent">URGENT</div>':''}${esc(txt)}
+      ${m.reactions.length?`<div>${m.reactions.map(r=>`<span class="react">${r}</span>`).join(' ')}</div>`:''}
+      <div class="meta">${M().detailedReceipts
+        ? `Sent ${fStamp(m.at)}${m.deliveredAt?' · Delivered '+fTime(m.deliveredAt):m.heldUntil?' · Held until '+fTime(m.heldUntil):''}${m.readAt?' · Read '+fTime(m.readAt):''}`
+        : `${fDay(m.at.slice(0,10))} ${fTime(m.at)}${edited?' · edited':''}${mine?(m.readAt?' · Read':' · Sent'):''}`}
+        ${edited && S.mode==='high_conflict' ? ' · edited earlier' : ''}${m.removed && S.mode==='high_conflict' ? ' · was removed from view in Cooperative mode':''}</div>
+      ${(M().reactions && !mine) || canEdit || (mine && M().removeFromView) ? `<div class="acts">
+        ${M().reactions && !mine ? ['👍','❤️','🙏'].map(e=>`<button data-a="react" data-id="${m.id}" data-v="${e}">${e}</button>`).join('') : ''}
+        ${canEdit?`<button data-a="sheet" data-v="editMsg" data-id="${m.id}">Edit</button>`:''}
+        ${mine && M().removeFromView?`<button data-a="removeMsg" data-id="${m.id}">Remove from view</button>`:''}
+      </div>`:''}
+    </div>`;
+  });
+  return h + `</div>`;
+}
+function lastText(m){ return m.revisions.length ? m.revisions[m.revisions.length-1].text : m.text; }
+function composer(){
+  const hc = S.mode==='high_conflict';
+  return `<div class="composer">
+    ${hc?`<div class="opts"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="urgent" ${S.ui.urgent?'checked':''} data-a="urgentToggle"> Urgent (about the children’s safety or health)</label></div>`:''}
+    <div class="line"><textarea id="msgText" placeholder="Message about ${esc(S.ui.chatTopic).toLowerCase()}">${esc(S.ui.draft||'')}</textarea><button class="btn" data-a="send">Send</button></div>
+    ${hc?`<div class="small muted" style="margin-top:4px">Tip: try a word like “idiot” or “dom” to see the word check.</div>`:''}
+  </div>`;
+}
+
+/* ---------- Money ---------- */
+function balance(){
+  // positive = other owes me
+  let b = 0;
+  S.expenses.forEach(e=>{ if (e.status!=='approved') return; const otherShare = e.amount*(e.paidBy==='me' ? (100-e.split) : e.split)/100; b += e.paidBy==='me' ? otherShare : -otherShare; });
+  S.payments.forEach(p=>{ b += p.from==='other' ? -p.amount : p.amount; });
+  return Math.round(b*100)/100;
+}
+function money(){
+  const b = balance();
+  let h = `<div class="card bal"><div class="muted small">Balance after approved expenses and payments</div><div class="big" style="font-size:28px;margin:6px 0">${b===0?'All square':R(Math.abs(b))}</div><div class="small">${b>0?S.other+' owes you':b<0?'You owe '+S.other:''}</div>
+    <div class="btns"><button class="btn" data-a="sheet" data-v="newExpense">Add expense</button><button class="btn ghost" data-a="sheet" data-v="payment">Record payment</button></div></div>`;
+  if (S.mode==='cooperative') h += `<div class="banner">Expenses under ${R(M().autoApproveUnder)} approve automatically. Settle up once a month.</div>`;
+  else h += `<div class="banner lock">Strict expenses: a receipt is required, a query must give a reason, and nothing approves automatically.</div>`;
+  h += `<h3>Expenses</h3><div class="card tight">${S.expenses.slice().reverse().map(e=>`<button class="row" data-a="sheet" data-v="expense" data-id="${e.id}"><span class="grow">${esc(e.title)}${e.recurring?' <span class="pill">Monthly</span>':''}<div class="sub">${esc(e.kid)} · paid by ${nameOf(e.paidBy).toLowerCase()==='you'?'you':S.other} · ${e.split}/${100-e.split} · ${fDate(e.at)}</div></span><span style="text-align:right"><div class="amt">${R(e.amount)}</div>${statusPill(e.status)}${e.auto?'<div class="small muted">auto</div>':''}</span></button>`).join('')}</div>`;
+  h += `<h3>Payments</h3><div class="card tight">${S.payments.slice().reverse().map(p=>`<div class="row"><span class="grow">${p.from==='me'?'You paid '+S.other:S.other+' paid you'}<div class="sub">${fDate(p.at)} · ${esc(p.note||'')} ${p.proof?'· proof attached':''}</div></span><span class="amt">${R(p.amount)}</span></div>`).join('')}</div>`;
+  const mt = S.maintenance;
+  h += `<h3>Maintenance</h3><div class="card tight"><div class="row"><span class="grow"><b>${R(mt.amount)} a month</b><div class="sub">Due on the ${mt.due}st, paid by ${S.other}</div></span></div>
+    ${mt.rows.map(r=>{ const late = parse(r.date).getDate()>mt.due+2, short = r.paid<mt.amount; return `<div class="row"><span class="grow">${r.month}<div class="sub">Paid ${fDate(r.date)}</div></span><span style="text-align:right"><div class="amt">${R(r.paid)}</div>${short?`<span class="pill warn">Short ${R(mt.amount-r.paid)}</span>`:''} ${late?'<span class="pill wait">Late</span>':''}${!short&&!late?'<span class="pill ok">On time</span>':''}</span></div>`; }).join('')}</div>`;
+  h += `<h3>Recurring costs</h3><div class="card tight">${S.recurring.map(r=>`<div class="row"><span class="grow">${esc(r.title)}<div class="sub">${esc(r.kid)} · repeats on the ${r.day}st</div></span><span class="amt">${R(r.amount)}</span></div>`).join('')}</div>`;
+  h += `<div class="btns"><button class="btn ghost" data-a="toast" data-v="Prototype: monthly statement PDF for Nov 2026">Monthly statement</button><button class="btn ghost" data-a="toast" data-v="Prototype: yearly statement PDF for 2026">Yearly statement</button></div>`;
+  return h;
+}
+
+/* ---------- Kids ---------- */
+function kidsTab(){
+  if (S.ui.kid) return kidProfile(S.children.find(c=>c.id===S.ui.kid));
+  let h = S.children.map(c=>`<button class="card row" style="border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px" data-a="openKid" data-id="${c.id}"><span class="av kid">${c.short[0]}</span><span class="grow"><b>${esc(c.name)}</b><div class="sub">${age(c.dob)} years · ${esc(c.grade)}, ${esc(c.school)}</div>${c.allergies.length?`<div class="small" style="color:var(--warn);font-weight:600">Allergy: ${c.allergies.map(a=>esc(a.what)).join(', ')}</div>`:''}</span><span class="chev">›</span></button>`).join('');
+  h += `<button class="btn ghost block" data-a="toast" data-v="Prototype: add a child profile">Add a child</button>`;
+  h += `<h3>Document vault</h3><div class="card tight">${S.documents.map(d=>`<button class="row" data-a="toast" data-v="Prototype: opens through a short-lived private link"><span class="grow">${d.pinned?'📌 ':''}${esc(d.name)}<div class="sub">${esc(d.kind)}${d.pinned?' · pinned as the reference':''}</div></span><span class="chev">›</span></button>`).join('')}<div class="row"><button class="btn sm ghost" data-a="toast" data-v="Prototype: upload a document">Upload document</button></div></div>`;
+  return h;
+}
+function kidProfile(c){
+  const lastVisit = c.visits.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+  let h = `<button class="btn ghost sm" data-a="closeKid">‹ All children</button>
+  <div class="card" style="margin-top:10px"><div class="who"><span class="av kid" style="width:56px;height:56px;font-size:22px">${c.short[0]}</span><div><div class="big">${esc(c.name)}</div><div class="small muted">${age(c.dob)} years (born ${fDate(c.dob)}) · ${esc(c.grade)}</div></div></div>
+  <div class="btns"><button class="btn warn block" data-a="sheet" data-v="ecard" data-id="${c.id}">Emergency card</button></div></div>`;
+  if (M().notifyMedicalChange) h += `<div class="banner lock">Changes to medical info are logged and ${S.other} is notified.</div>`;
+  h += `<div class="quick"><div class="card small"><b style="color:var(--warn)">Allergies</b><div>${c.allergies.length?c.allergies.map(a=>esc(a.what)).join(', '):'None known'}</div></div>
+    <div class="card small"><b>Last doctor visit</b><div>${lastVisit?fDate(lastVisit.date)+'<br>'+esc(lastVisit.doctor)+': '+esc(lastVisit.outcome):'None'}</div></div></div>`;
+  const acc = (title, body, open) => `<details class="acc" ${open?'open':''}><summary>${title}</summary><div class="body">${body}</div></details>`;
+  const kv = o => `<dl class="kv">${Object.entries(o).map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)||'<span class="muted">Not added</span>'}</dd>`).join('')}</dl>`;
+  h += acc('Basics', kv({'Full name':c.name,'Date of birth':fDate(c.dob),'Age':age(c.dob)+' years','School':c.school,'Grade':c.grade,'Teacher':c.teacher}));
+  h += acc('Allergies', c.allergies.length ? c.allergies.map(a=>`<p><b>${esc(a.what)}</b><br><span class="muted">Reaction:</span> ${esc(a.reaction)}<br><span class="muted">What to do:</span> ${esc(a.action)}</p>`).join('') : '<p class="muted">None known</p>');
+  h += acc('Medical basics', kv({'Blood type':c.blood,'Weight':c.weight}) + (c.conditions.length?`<p><b>Conditions</b></p>`+c.conditions.map(x=>`<p>${esc(x.what)}: <span class="muted">${esc(x.manage)}</span></p>`).join(''):'<p class="muted">No ongoing conditions</p>'));
+  h += acc('Medication', c.meds.length ? c.meds.map(x=>kv({'Medicine':x.name,'Dose':x.dose,'When':x.times,'Prescribed by':x.by})).join('<hr class="s">') : '<p class="muted">None</p>');
+  h += acc('Medical aid', kv({'Scheme':c.aid.scheme,'Plan':c.aid.plan,'Member number':c.aid.number,'Main member':c.aid.main,'Dependant code':c.aid.dep}));
+  h += acc('Doctors', c.doctors.map(d=>`<p><b>${esc(d.role)}</b>: ${esc(d.name)}<br><span class="muted">${esc(d.where)} · ${esc(d.phone)}</span></p>`).join(''));
+  h += acc('Visit log', c.visits.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(v=>kv({'Date':fDate(v.date),'Doctor':v.doctor,'Reason':v.reason,'Outcome':v.outcome,'Medicine':v.meds,'Follow-up':v.follow?fDate(v.follow):'','Who took them':v.took,'Attached':v.file})).join('<hr class="s">') + `<div class="btns"><button class="btn sm" data-a="sheet" data-v="visit" data-id="${c.id}">Add a visit</button></div>`);
+  h += acc('Vaccinations', c.vacc.map(v=>`<p>${esc(v.what)} <span class="muted">· ${fDate(v.date)}</span></p>`).join('') + `<button class="btn sm ghost" data-a="toast" data-v="Prototype: photo of the clinic card">Clinic card photo</button>`);
+  h += acc('Emergency contacts', c.contacts.map((x,i)=>`<p>${i+1}. <b>${esc(x.name)}</b><br><span class="muted">${esc(x.phone)}</span></p>`).join(''));
+  h += acc('Day-to-day', kv({'Clothes':c.daily.clothes,'Shoes':c.daily.shoes,'Diet':c.daily.diet,'Bedtime':c.daily.bedtime,'Comfort item':c.daily.comfort}));
+  h += acc('School', kv({'Office':c.schoolInfo.office,'Times':c.schoolInfo.timetable,'Aftercare':c.schoolInfo.aftercare,'Extramurals':c.schoolInfo.extra}));
+  return h;
+}
+
+/* ---------- Sheets and dialogs ---------- */
+function overlay(){
+  const s = S.ui.sheet, dialog = s.type==='wordcheck' || s.type==='confirm';
+  return `<div class="overlay ${dialog?'dialog':''}" data-a="closeOverlay"><div class="sheet" data-stop="1">${dialog?'':'<div class="grab"></div>'}${sheetBody(s)}</div></div>`;
+}
+function sheetBody(s){
+  const close = `<button class="btn ghost" data-a="close">Close</button>`;
+  switch(s.type){
+  case 'wordcheck': return `<h2 style="font-size:18px">Are you sure you want to send this?</h2><p class="muted">Messages can’t be edited or deleted after sending.</p><div class="btns" style="flex-direction:column"><button class="btn" data-a="close">Edit message</button><button class="btn ghost" data-a="sendAnyway">Send anyway</button></div>`;
+  case 'confirm': return `<h2 style="font-size:18px">${s.title}</h2><p class="muted">${s.text}</p><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="${s.ok}">${s.okLabel}</button></div>`;
+  case 'more': return `<h2>More</h2><div class="card tight">
+      <button class="row" data-a="sheet" data-v="modeSettings"><span class="grow">Mode<div class="sub">${M().label}</div></span><span class="chev">›</span></button>
+      ${M().journal?`<button class="row" data-a="sheet" data-v="journal"><span class="grow">Private journal<div class="sub">Only you can see it</div></span><span class="chev">›</span></button>`:''}
+      ${M().packingList?`<button class="row" data-a="sheet" data-v="packing"><span class="grow">Packing list</span><span class="chev">›</span></button>`:''}
+      <button class="row" data-a="sheet" data-v="records"><span class="grow">Records and export<div class="sub">Everything that’s been logged</div></span><span class="chev">›</span></button>
+      <button class="row" data-a="tabKidsDocs"><span class="grow">Documents</span><span class="chev">›</span></button>
+      <button class="row" data-a="sheet" data-v="help"><span class="grow">Help and support contacts</span><span class="chev">›</span></button>
+      <button class="row" data-a="sheet" data-v="account"><span class="grow">Account and security<div class="sub">Two-step login, notifications</div></span><span class="chev">›</span></button>
+    </div>${close}`;
+  case 'modeSettings': {
+    let b = `<h2>Mode</h2><p>You’re in <b>${M().label}</b> mode. The mode changes what you see. It never changes what is recorded.</p>`;
+    if (S.mode==='cooperative') b += `<div class="card small">Either parent can switch to High-conflict at any time, and it takes effect straight away. Going back needs both parents to agree.</div><button class="btn block" data-a="confirmHC">Switch to High-conflict</button>`;
+    else if (S.modeRequest) b += `<div class="banner">You asked to go back to Cooperative on ${fStamp(S.modeRequest.at)}. Waiting for ${S.other} to accept.</div><button class="btn ghost block" data-a="simAcceptMode">Prototype: ${S.other} accepts</button>`;
+    else b += `<div class="card small">${S.solo?'You’re using the app on your own, so you can switch back yourself.':'Going back to Cooperative needs '+S.other+' to accept.'}</div><button class="btn block" data-a="askCoop">${S.solo?'Switch to Cooperative':'Ask to go back to Cooperative'}</button>`;
+    return b + `<div class="btns">${close}</div>`;
+  }
+  case 'checkin': return `<h2>Check in at handover</h2><p>This records the time from our server and takes your location once, right now. Location is never tracked.</p><div class="card small">Expected: ${S.handover.time} at ${esc(S.handover.place)}</div><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doCheckIn">Check in now</button></div>`;
+  case 'handoverNote': return `<h2>Handover note</h2><p class="small muted">A quick note for the other home.</p>${['Ate well','Slept well','Homework done','Medicine given'].map(x=>`<label class="check"><input type="checkbox" class="hn" value="${x}"> ${x}</label>`).join('')}<label class="f">Anything else</label><textarea class="f" id="hnText" placeholder="Ben has a spelling sheet due Monday"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveHandoverNote">Send note</button></div>`;
+  case 'packing': return `<h2>Packing list</h2><p class="small muted">What travels with the children. Reused every handover.</p><div class="card tight">${S.packing.map((p,i)=>`<label class="row"><input type="checkbox" data-a="pack" data-id="${i}" ${p.on?'checked':''} style="width:22px;height:22px"><span class="grow">${esc(p.t)}</span></label>`).join('')}</div><div class="btns"><button class="btn ghost" data-a="resetPacking">Untick all</button>${close}</div>`;
+  case 'journal': return `<h2>Private journal</h2><p class="small muted">Only you can see these notes. They’re timestamped by the server and you can include them in your export.</p><textarea class="f" id="jText" placeholder="What happened?"></textarea><div class="btns"><button class="btn ghost sm" data-a="toast" data-v="Prototype: attach a photo">Add photo</button><button class="btn sm" data-a="addJournal">Save note</button></div><h3>Earlier notes</h3>${S.journal.slice().reverse().map(j=>`<div class="card small"><div class="muted">${fStamp(j.at)}</div>${esc(j.text)}</div>`).join('')}${close}`;
+  case 'request': {
+    const r = S.requests.find(x=>x.id===s.id);
+    const exp = M().requestExpiryHours ? new Date(new Date(r.at).getTime()+M().requestExpiryHours*3600000) : null;
+    let b = `<h2>Change request</h2><div class="card"><b>${esc(r.text)}</b><div class="small muted">${r.from==='me'?'You asked':S.other+' asked'} on ${fStamp(r.at)}</div>${r.reason?`<p class="small"><span class="muted">Reason:</span> ${esc(r.reason)}</p>`:''}<div>${statusPill(r.status)}${r.answerReason?` <span class="small muted">${esc(r.answerReason)}</span>`:''}</div></div>`;
+    if (r.status==='pending' && r.from==='other') {
+      if (exp) b += `<p class="small muted">If nobody answers, this expires on ${fStamp(exp)}.</p>`;
+      if (S.mode==='high_conflict') b += `<label class="f">Reason if declining (optional)</label><input class="f" id="declineReason">`;
+      b += `<div class="btns"><button class="btn ghost" data-a="answerReq" data-id="${r.id}" data-v="declined">Decline</button><button class="btn" data-a="answerReq" data-id="${r.id}" data-v="accepted">Accept</button></div>`;
+    }
+    if (r.status==='pending' && r.from==='me') b += `<button class="btn ghost block" data-a="simAnswer" data-id="${r.id}">Prototype: ${S.other} accepts</button>`;
+    return b + `<div class="btns">${close}</div>`;
+  }
+  case 'newRequest': {
+    const hc = M().swapReasonRequired;
+    return `<h2>${hc?'Formal change request':'Ask for a swap'}</h2>${hc?'<p class="small muted">The request, the answer and the times are recorded. Unanswered requests expire after 48 hours.</p>':''}
+      <label class="f">Day you want to change</label><input class="f" type="date" id="rqA" value="${s.date||iso(addDays(new Date(),2))}">
+      <label class="f">${hc?'Day offered in return (optional)':'Swap for (optional)'}</label><input class="f" type="date" id="rqB">
+      ${hc?'<label class="f">Reason (required)</label><textarea class="f" id="rqReason" placeholder="Explain why you’re asking"></textarea>':'<label class="f">Note (optional)</label><input class="f" id="rqReason" placeholder="Can you take Thursday?">'}
+      <div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="sendRequest">Send request</button></div>`;
+  }
+  case 'day': {
+    const d = s.id, c = careOn(d), evs = S.events.filter(e=>e.date===d);
+    return `<h2>${fDay(d)} ${parse(d).getFullYear()}</h2><div class="who card"><div class="av ${c}">${c==='me'?'N':'J'}</div><div><b>${c==='me'?'With you':'With '+S.other}</b>${S.overrides[d]?'<div class="small muted">Changed by an accepted request</div>':''}</div></div>
+      ${HOLIDAYS[d]?`<div class="banner warn">Public holiday: ${HOLIDAYS[d]}</div>`:''}${TERMS[d]?`<div class="banner">${TERMS[d]}</div>`:''}${SPECIAL[d]?`<div class="banner">${SPECIAL[d]}</div>`:''}
+      <h3>Events</h3><div class="card tight">${evs.map(e=>`<button class="row" data-a="sheet" data-v="event" data-id="${e.id}"><span class="small" style="width:46px"><b>${e.time}</b></span><span class="grow">${esc(e.title)}<div class="sub">${esc(e.place)}</div></span></button>`).join('')||'<div class="row muted">No events</div>'}</div>
+      <div class="btns"><button class="btn ghost" data-a="sheet" data-v="newEvent" data-id="${d}">Add event</button><button class="btn" data-a="sheet" data-v="newRequest" data-id="${d}">${M().swapReasonRequired?'Request a change':'Ask for a swap'}</button></div><div class="btns">${close}</div>`;
+  }
+  case 'event': { const e = S.events.find(x=>x.id===s.id); return `<h2>${esc(e.title)}</h2>${kvSimple({'When':fDay(e.date)+', '+e.time,'Where':e.place,'Child':e.kid,'Notes':e.notes||'None','Added by':nameOf(e.by)})}<div class="btns">${close}</div>`; }
+  case 'newEvent': return `<h2>Add event</h2><label class="f">What</label><input class="f" id="evTitle" placeholder="Soccer match"><label class="f">Date</label><input class="f" type="date" id="evDate" value="${s.id||TODAY}"><label class="f">Time</label><input class="f" type="time" id="evTime" value="15:00"><label class="f">Place</label><input class="f" id="evPlace"><label class="f">Child</label><select class="f" id="evKid">${S.children.map(c=>`<option>${c.short}</option>`).join('')}<option>Both</option></select><label class="f">Notes</label><input class="f" id="evNotes"><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveEvent">Save</button></div>`;
+  case 'expense': {
+    const e = S.expenses.find(x=>x.id===s.id);
+    let b = `<h2>${esc(e.title)}</h2>${kvSimple({'Amount':R(e.amount),'Child':e.kid,'Category':e.cat,'Paid by':e.paidBy==='me'?'You':S.other,'Split':e.split+'% '+(e.paidBy==='me'?'you':S.other)+', '+(100-e.split)+'% '+(e.paidBy==='me'?S.other:'you'),'Added':fStamp(e.at),'Receipt':e.receipt?'Attached':'None'})}<div style="margin:10px 0">${statusPill(e.status)} ${e.auto?'<span class="small muted">Approved automatically (under '+R(MODES.cooperative.autoApproveUnder)+')</span>':''}</div>`;
+    if (e.query) b += `<div class="banner warn">Query: ${esc(e.query)}</div>`;
+    if (e.status==='pending' && e.paidBy==='other') b += `<label class="f">${M().queryReasonRequired?'Reason for a query (required)':'Question (optional)'}</label><input class="f" id="qReason" placeholder="Was this claimed from medical aid?"><div class="btns"><button class="btn ghost" data-a="queryExp" data-id="${e.id}">Query</button><button class="btn" data-a="approveExp" data-id="${e.id}">Approve</button></div>`;
+    if (e.status==='pending' && e.paidBy==='me') b += `<button class="btn ghost block" data-a="simApproveExp" data-id="${e.id}">Prototype: ${S.other} approves</button>`;
+    if (e.status==='queried' && e.paidBy==='me') b += `<button class="btn ghost block" data-a="toast" data-v="Prototype: reply to the query and resubmit">Reply to the query</button>`;
+    return b + `<div class="btns">${close}</div>`;
+  }
+  case 'newExpense': return `<h2>Add expense</h2><label class="f">What for</label><input class="f" id="exTitle" placeholder="School shoes"><label class="f">Amount (R)</label><input class="f" id="exAmt" inputmode="decimal" placeholder="0.00"><label class="f">Category</label><select class="f" id="exCat"><option>School</option><option>Medical</option><option>Clothing</option><option>Activities</option><option>Other</option></select><label class="f">Child</label><select class="f" id="exKid">${S.children.map(c=>`<option>${c.short}</option>`).join('')}<option>Both</option></select><label class="f">Split (your share %)</label><select class="f" id="exSplit"><option value="50">50/50 (from the plan)</option><option value="60">60/40</option><option value="40">40/60</option><option value="100">100% mine</option></select>
+      <label class="check"><input type="checkbox" id="exReceipt"> Receipt photo attached ${M().receiptRequired?'<b>(required)</b>':''}</label>
+      ${S.mode==='cooperative'?`<p class="small muted">Under ${R(M().autoApproveUnder)} approves automatically.</p>`:''}
+      <div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveExpense">Add</button></div>`;
+  case 'payment': return `<h2>Record a payment</h2><p class="small muted">Balance: ${balance()>0?S.other+' owes you '+R(balance()):balance()<0?'you owe '+S.other+' '+R(-balance()):'all square'}</p><label class="f">Amount (R)</label><input class="f" id="payAmt" inputmode="decimal" value="${balance()<0?(-balance()).toFixed(2):''}"><label class="f">Note</label><input class="f" id="payNote" placeholder="November costs"><label class="check"><input type="checkbox" id="payProof"> Proof of payment attached</label><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="savePayment">Record payment</button></div>`;
+  case 'ecard': {
+    const c = S.children.find(x=>x.id===s.id);
+    return `<div class="ecard"><h2>Emergency card</h2><div class="big" style="font-size:20px">${esc(c.name)}</div><div class="small muted">Born ${fDate(c.dob)} (${age(c.dob)} years)</div>
+      <div class="sec"><b>Allergies</b>${c.allergies.length?c.allergies.map(a=>`<div><b style="display:inline;color:var(--warn);text-transform:none;font-size:15px">${esc(a.what)}</b>: ${esc(a.action)}</div>`).join(''):'None known'}</div>
+      <div class="sec"><b>Conditions</b>${c.conditions.map(x=>esc(x.what)).join(', ')||'None'}</div>
+      <div class="sec"><b>Medication</b>${c.meds.map(x=>esc(x.name+', '+x.dose)).join('<br>')||'None'}</div>
+      <div class="sec"><b>Blood type</b>${esc(c.blood)}</div>
+      <div class="sec"><b>Medical aid</b>${esc(c.aid.scheme)}, ${esc(c.aid.plan)}<br>No. ${esc(c.aid.number)}, dependant ${esc(c.aid.dep)}</div>
+      <div class="sec"><b>Contacts</b>${c.contacts.map((x,i)=>`${i+1}. ${esc(x.name)}: ${esc(x.phone)}`).join('<br>')}</div>
+      <div class="sec"><b>GP</b>${esc(c.doctors[0].name)}, ${esc(c.doctors[0].phone)}</div></div>
+      <div class="btns"><button class="btn" data-a="toast" data-v="Prototype: PDF created. Share link expires in 24 hours">Send as PDF</button>${close}</div>
+      <p class="small muted">The shared link expires after 24 hours. In the phone app this card also works offline.</p>`;
+  }
+  case 'visit': return `<h2>Add a doctor visit</h2><label class="f">Date</label><input class="f" type="date" id="vDate" value="${TODAY}"><label class="f">Doctor or hospital</label><input class="f" id="vDoc"><label class="f">Reason</label><input class="f" id="vReason"><label class="f">Outcome</label><input class="f" id="vOut"><label class="f">Medicine given</label><input class="f" id="vMeds"><label class="f">Follow-up date</label><input class="f" type="date" id="vFollow"><button class="btn ghost sm" data-a="toast" data-v="Prototype: attach script or sick note">Attach script or sick note</button><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveVisit" data-id="${s.id}">Save</button></div>`;
+  case 'editMsg': { const m = S.messages.find(x=>x.id===s.id); const left = Math.max(0, Math.ceil((M().editWindowMin*60000-(Date.now()-new Date(m.at).getTime()))/60000)); return `<h2>Edit message</h2><p class="small muted">${left} min left to edit. It will show as edited, and the original stays in the record.</p><textarea class="f" id="editText">${esc(lastText(m))}</textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveEdit" data-id="${m.id}">Save</button></div>`; }
+  case 'records': return `<h2>Records</h2><p class="small">Everything is logged the same way in both modes. Each entry carries a tamper check that links it to the one before.</p>
+      <div class="card"><b>Export the record</b><p class="small muted" style="margin:4px 0 8px">Court-ready PDF with page numbers, timestamps and a verification code. ${S.other} is not told.</p>
+      <div style="display:flex;gap:8px"><div style="flex:1"><label class="f">From</label><input class="f" type="date" value="2026-01-01"></div><div style="flex:1"><label class="f">To</label><input class="f" type="date" value="${TODAY}"></div></div>
+      ${['Messages','Schedule and requests','Handovers','Expenses and payments','Child info changes',...(M().journal?['My private journal']:[])].map(x=>`<label class="check"><input type="checkbox" checked> ${x}</label>`).join('')}
+      <button class="btn block" data-a="exportPdf">Create PDF</button>${S.ui.exported?`<div class="banner" style="margin:10px 0 0">Prototype: PDF ready. Verification code <span class="code">${S.log[S.log.length-1].hash.toUpperCase()}</span></div>`:''}</div>
+      <h3>Log</h3><div class="card tight">${S.log.slice().reverse().map(l=>`<div class="row small"><span class="grow">${esc(l.what)}<div class="sub">${l.who==='me'?'You':S.other} · ${fStamp(l.at)}</div></span><span class="code">${l.hash.slice(0,8)}</span></div>`).join('')}</div>${close}`;
+  case 'help': return `<h2>Help and support</h2><div class="card tight">
+      ${[['Police (SAPS)','10111'],['Ambulance','10177'],['Emergency from a cell phone','112'],['GBV Command Centre (24 hours)','0800 428 428'],['Childline','116']].map(([a,b])=>`<div class="row"><span class="grow">${a}</span><b>${b}</b></div>`).join('')}</div><p class="small muted">Check these numbers before launch.</p>${close}`;
+  case 'account': return `<h2>Account and security</h2><div class="card tight"><div class="row"><span class="grow">Two-step login<div class="sub">Code by SMS or email at sign-in</div></span><span class="pill ok">On</span></div><div class="row"><span class="grow">Email alerts<div class="sub">Messages, requests, expenses</div></span><span class="pill ok">On</span></div><div class="row"><span class="grow">Hide message text in alerts</span><span class="pill">Off</span></div><div class="row"><span class="grow">App lock (PIN, fingerprint, face)<div class="sub">Comes with the phone app</div></span></div></div>${close}`;
+  }
+  return close;
+}
+function kvSimple(o){ return `<dl class="kv card">${Object.entries(o).map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`; }
+
+/* ---------- Actions ---------- */
+let toastTimer;
+function toast(t){ S.ui.toast = t; render(); clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ S.ui.toast = null; render(); }, 2600); }
+const val = id => (document.getElementById(id)?.value || '').trim();
+function sheet(type, extra={}){ S.ui.sheet = { type, ...extra }; render(); }
+function close(){ S.ui.sheet = null; render(); }
+
+function inQuietHours(){ const q = M().quietHours; if (!q) return false; const h = new Date().getHours(); return h >= q.from || h < q.to; }
+function doSend(text){
+  const now = NOW();
+  const fl = M().floodLimit;
+  if (fl) {
+    S.sentTimes = S.sentTimes.filter(t => now - new Date(t) < fl.minutes*60000);
+    if (S.sentTimes.length >= fl.count) { S.ui.sheet = null; toast(`Limit reached: ${fl.count} messages in ${fl.minutes} minutes. Try again shortly.`); return; }
+    S.sentTimes.push(now.toISOString());
+  }
+  const held = inQuietHours() && !S.ui.urgent;
+  let heldUntil = null; if (held){ const d = new Date(); if (d.getHours()>=M().quietHours.from) d.setDate(d.getDate()+1); d.setHours(M().quietHours.to,0,0,0); heldUntil = d.toISOString(); }
+  const m = { id:uid(), topic:S.ui.chatTopic, from:'me', text, at:now.toISOString(), deliveredAt: held?null:now.toISOString(), heldUntil, readAt:null, revisions:[], removed:false, urgent:!!S.ui.urgent && S.mode==='high_conflict', reactions:[] };
+  S.messages.push(m); log(`Sent message (${S.ui.chatTopic})${m.urgent?' marked urgent':''}`);
+  S.ui.draft = ''; S.ui.urgent = false; S.ui.sheet = null;
+  render(); scrollDown();
+  if (!held) setTimeout(()=>{ m.readAt = new Date().toISOString(); const x = S.messages.find(y=>y.id===m.id); if (x) x.readAt = m.readAt; render(); }, 4000);
+}
+function scrollDown(){ setTimeout(()=>window.scrollTo(0, document.body.scrollHeight), 30); }
+
+const A = {
+  protoMode(v){ S.mode = v; S.modeRequest = null; if (v==='high_conflict' && S.ui.chatTopic==='General') S.ui.chatTopic = null; render(); },
+  reset(){ try { localStorage.removeItem(STORE); } catch(e){} S = load(); render(); },
+  tab(v){ S.tab = v; S.ui.chatTopic = null; S.ui.kid = null; S.ui.sheet = null; render(); window.scrollTo(0,0); },
+  tabKidsDocs(){ S.tab='kids'; S.ui.kid=null; S.ui.sheet=null; render(); setTimeout(()=>window.scrollTo(0, document.body.scrollHeight),30); },
+  sheet(v, el){ sheet(v, { id: el.dataset.id, date: el.dataset.id }); },
+  close, closeOverlay(v, el, ev){ if (ev.target === el) close(); },
+  toast(v){ toast(v); },
+  // sign-up
+  via(v){ S.ui.form.via = v; render(); },
+  step(v){ if (S.ui.step===4 || +v===4) {} S.ui.step = +v; render(); },
+  consent(v, el){ S.ui.form.consent = el.checked; render(); },
+  pickMode(v){ S.ui.form.mode = v; render(); },
+  skipSignup(){ S.signedUp = true; S.ui = {}; render(); },
+  finish(v){ const n = val('childName'), d = val('childDob'); if (n){ S.children[0].name = n; S.children[0].short = n.split(' ')[0]; } if (d) S.children[0].dob = d; S.mode = S.ui.form.mode; S.solo = v==='solo'; S.signedUp = true; log('Consent recorded (policy v0.1)'); log('Space created in '+MODES[S.mode].label+' mode'); S.ui = {}; if (v==='invite') toast('Invite link copied'); else render(); },
+  joinOther(){ S.solo = false; log(S.other+' joined the space', 'other'); toast(S.other+' joined'); },
+  // today
+  todo(v, el){ const t = S.todos.find(x=>x.id===el.dataset.id); t.done = el.checked; log((t.done?'Ticked':'Unticked')+' to-do: '+t.text); render(); },
+  addTodo(){ const t = val('todoText'); if (!t) return; S.todos.push({ id:uid(), text:t, who:'me', done:false }); log('Added to-do: '+t); render(); },
+  pack(v, el){ S.packing[+el.dataset.id].on = el.checked; render(); },
+  resetPacking(){ S.packing.forEach(p=>p.on=false); render(); },
+  doCheckIn(){ const at = NOW().toISOString(); S.checkIns.push({ at, who:'me', place:'One-off location stamp' }); log('Handover check-in with one-off location stamp'); S.ui.sheet=null; toast('Checked in at '+fTime(at)); },
+  saveHandoverNote(){ const ticks = [...document.querySelectorAll('.hn:checked')].map(x=>x.value); const t = [ticks.join(', '), val('hnText')].filter(Boolean).join('. '); if (!t) return; S.handoverNotes.push({ at:NOW().toISOString(), from:'me', text:t }); log('Sent handover note'); S.ui.sheet=null; toast('Note sent'); },
+  addJournal(){ const t = val('jText'); if (!t) return; S.journal.push({ id:uid(), at:NOW().toISOString(), text:t }); render(); },
+  // calendar
+  calNav(v){ const b = S.ui.calMonth ? parse(S.ui.calMonth) : new Date(new Date().getFullYear(), new Date().getMonth(), 1); b.setMonth(b.getMonth()+ +v); S.ui.calMonth = iso(b); render(); },
+  sendRequest(){
+    const a = val('rqA'), b = val('rqB'), r = val('rqReason');
+    if (!a) return toast('Pick a day');
+    if (M().swapReasonRequired && !r) return toast('A reason is required in High-conflict mode');
+    S.requests.push({ id:uid(), from:'me', kind:b?'swap':'change', dates:b?[a,b]:[a], text: b ? 'Swap '+fDay(a)+' for '+fDay(b) : 'Change '+fDay(a), reason:r, status:'pending', at:NOW().toISOString() });
+    log('Sent change request: '+(b?'swap '+fDate(a)+' for '+fDate(b):'change '+fDate(a))); S.ui.sheet=null; toast('Request sent to '+S.other);
+  },
+  answerReq(v, el){ const r = S.requests.find(x=>x.id===el.dataset.id); r.status = v; r.answerReason = val('declineReason'); r.answeredAt = NOW().toISOString(); if (v==='accepted') applySwap(r); log((v==='accepted'?'Accepted':'Declined')+' change request: '+r.text); S.ui.sheet=null; toast(v==='accepted'?'Accepted. The calendar is updated.':'Declined'); },
+  simAnswer(v, el){ const r = S.requests.find(x=>x.id===el.dataset.id); r.status='accepted'; applySwap(r); log('Accepted change request: '+r.text, 'other'); S.ui.sheet=null; toast(S.other+' accepted'); },
+  saveEvent(){ const t = val('evTitle'); if (!t) return toast('Add a title'); S.events.push({ id:uid(), title:t, date:val('evDate'), time:val('evTime'), place:val('evPlace'), kid:val('evKid'), notes:val('evNotes'), by:'me' }); log('Added event: '+t); S.ui.sheet=null; toast('Event added'); },
+  // messages
+  openTopic(v){ S.ui.chatTopic = v; render(); scrollDown(); },
+  closeTopic(){ S.ui.chatTopic = null; render(); },
+  urgentToggle(v, el){ S.ui.urgent = el.checked; S.ui.draft = val('msgText'); },
+  send(){ const t = val('msgText'); if (!t) return; S.ui.draft = t; if (M().wordCheck && wordCheck(t)) { sheet('wordcheck'); return; } doSend(t); },
+  sendAnyway(){ doSend(S.ui.draft); },
+  react(v, el){ const m = S.messages.find(x=>x.id===el.dataset.id); m.reactions = m.reactions.includes(v) ? m.reactions.filter(r=>r!==v) : [...m.reactions, v]; render(); },
+  saveEdit(v, el){ const m = S.messages.find(x=>x.id===el.dataset.id); const t = val('editText'); if (!t) return; m.revisions.push({ text:t, at:NOW().toISOString() }); log('Edited message (original kept)'); S.ui.sheet=null; render(); },
+  removeMsg(v, el){ const m = S.messages.find(x=>x.id===el.dataset.id); m.removed = true; log('Removed message from view (kept in record)'); render(); },
+  // money
+  approveExp(v, el){ const e = S.expenses.find(x=>x.id===el.dataset.id); e.status='approved'; log('Approved expense: '+e.title); S.ui.sheet=null; toast('Approved'); },
+  queryExp(v, el){ const e = S.expenses.find(x=>x.id===el.dataset.id); const r = val('qReason'); if (M().queryReasonRequired && !r) return toast('Give a reason for the query'); e.status='queried'; e.query = r || 'Queried'; log('Queried expense: '+e.title); S.ui.sheet=null; toast('Query sent'); },
+  simApproveExp(v, el){ const e = S.expenses.find(x=>x.id===el.dataset.id); e.status='approved'; log('Approved expense: '+e.title, 'other'); S.ui.sheet=null; toast(S.other+' approved'); },
+  saveExpense(){
+    const t = val('exTitle'), a = parseFloat(val('exAmt').replace(',','.').replace(/\s/g,'')), rc = document.getElementById('exReceipt').checked;
+    if (!t || !(a>0)) return toast('Add what it was for and the amount');
+    if (M().receiptRequired && !rc) return toast('A receipt is required in High-conflict mode');
+    const auto = M().autoApproveUnder && a < M().autoApproveUnder;
+    S.expenses.push({ id:uid(), title:t, cat:val('exCat'), kid:val('exKid'), amount:a, paidBy:'me', split:+val('exSplit'), receipt:rc, status:auto?'approved':'pending', auto, at:NOW().toISOString() });
+    log('Added expense: '+t+' ('+R(a)+')'); S.ui.sheet=null; toast(auto?'Added and approved automatically':'Added. Waiting for '+S.other);
+  },
+  savePayment(){ const a = parseFloat(val('payAmt').replace(',','.')); if (!(a>0)) return toast('Enter an amount'); if (M().receiptRequired && !document.getElementById('payProof').checked) return toast('Attach proof of payment'); S.payments.push({ id:uid(), from:'me', to:'other', amount:a, at:NOW().toISOString(), proof:document.getElementById('payProof').checked?'Proof.pdf':'', note:val('payNote') }); log('Recorded payment: '+R(a)); S.ui.sheet=null; toast('Payment recorded'); },
+  // kids
+  openKid(v, el){ S.ui.kid = el.dataset.id; render(); window.scrollTo(0,0); },
+  closeKid(){ S.ui.kid = null; render(); },
+  saveVisit(v, el){ const c = S.children.find(x=>x.id===el.dataset.id); c.visits.push({ date:val('vDate'), doctor:val('vDoc'), reason:val('vReason'), outcome:val('vOut'), meds:val('vMeds'), follow:val('vFollow'), took:'Naledi', file:'' }); log('Added doctor visit for '+c.short); S.ui.sheet=null; toast(M().notifyMedicalChange?'Saved. '+S.other+' has been notified.':'Saved'); },
+  // mode
+  confirmHC(){ sheet('confirm', { title:'Switch to High-conflict?', text:'This takes effect straight away for both of you. Going back to Cooperative will need '+S.other+' to agree.', ok:'doHC', okLabel:'Switch' }); },
+  doHC(){ S.mode='high_conflict'; S.ui.chatTopic=null; log('Switched space to High-conflict mode'); S.ui.sheet=null; toast('Now in High-conflict mode'); },
+  askCoop(){ if (S.solo){ S.mode='cooperative'; log('Switched space to Cooperative mode'); S.ui.sheet=null; toast('Now in Cooperative mode'); return; } S.modeRequest = { at:NOW().toISOString() }; log('Asked to switch back to Cooperative mode'); sheet('modeSettings'); },
+  simAcceptMode(){ S.mode='cooperative'; S.modeRequest=null; log('Accepted switch to Cooperative mode', 'other'); S.ui.sheet=null; toast(S.other+' accepted. Now in Cooperative mode'); },
+  exportPdf(){ S.ui.exported = true; log('Exported record as PDF'); sheet('records'); },
+};
+function applySwap(r){ if (r.kind==='swap'){ const [a,b] = r.dates; const ca = careOn(a), cb = careOn(b); S.overrides[a] = cb; S.overrides[b] = ca; } else { S.overrides[r.dates[0]] = careOn(r.dates[0])==='me'?'other':'me'; } }
+
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-a]');
+  if (!el) return;
+  if (el.dataset.a === 'closeOverlay' && ev.target !== el) return;
+  if (el.type === 'checkbox') return; // handled on change
+  const f = A[el.dataset.a]; if (f) { ev.preventDefault(); f(el.dataset.v, el, ev); }
+});
+document.addEventListener('change', ev => {
+  const el = ev.target; if (el.type !== 'checkbox' || !el.dataset.a) return;
+  const f = A[el.dataset.a]; if (f) f(el.dataset.v, el, ev);
+});
+document.addEventListener('input', ev => { if (ev.target.id === 'msgText') S.ui.draft = ev.target.value; });
+render();
+</script>
+</body>
+</html>
