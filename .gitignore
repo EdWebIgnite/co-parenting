@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+build/
+dist/
+.output/
+.svelte-kit/
+.vercel/
+.netlify/
+.wrangler/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Environment files. Only .env.example is committed.
+.env
+.env.*
+!.env.example
+
+# Supabase local temp folders
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+
+# Tests
+test-results/
+playwright-report/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors and OS
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+.DS_Store
+Thumbs.db

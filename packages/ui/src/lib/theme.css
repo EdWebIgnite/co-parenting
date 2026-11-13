@@ -1,0 +1,30 @@
+/*
+ * Design tokens for every app built on the shared core.
+ * Change colours, type and spacing here only. Components use these names
+ * (bg-surface, text-ink, text-brand and so on), never raw colour values.
+ */
+@theme {
+	--color-brand: #2f6f6a;
+	--color-brand-soft: #e3efed;
+	--color-ink: #1d2427;
+	--color-muted: #5f6b70;
+	--color-line: #dde3e5;
+	--color-surface: #ffffff;
+	--color-canvas: #f6f8f8;
+	--color-warn: #a35a00;
+	--color-danger: #b42318;
+
+	--font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+	--radius-card: 0.75rem;
+}
+
+@layer base {
+	html {
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	body {
+		@apply bg-canvas font-sans text-ink antialiased;
+	}
+}

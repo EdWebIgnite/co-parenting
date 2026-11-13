@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import '@coparent/ui/theme.css';
+
+/* Let Tailwind find the classes used in the shared UI package. */
+@source '../../../../packages/ui/src';
