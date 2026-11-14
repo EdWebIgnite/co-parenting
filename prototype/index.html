@@ -107,6 +107,19 @@ input[type=checkbox]{accent-color:var(--primary)}
 .choice.on{border:2px solid var(--primary);background:var(--primary-soft)}
 .choice b{display:block;font-size:18px;line-height:24px;margin-bottom:4px}
 .legal{font-size:12px;color:var(--destructive);font-weight:700;letter-spacing:.05em}
+
+/* flat home layout */
+.hero{padding:8px 0 20px}
+.hero .av{width:48px;height:48px;font-size:18px}
+.hero-t{font-size:24px;line-height:30px;font-weight:700}
+.flat-sec{padding:20px 0;border-top:1px solid var(--border)}
+.lbl{font-size:14px;line-height:20px;font-weight:600;color:var(--muted-foreground);margin-bottom:8px}
+.hand{display:flex;flex-direction:column;font-size:18px;line-height:26px}
+.hand .muted{font-size:16px;line-height:24px}
+.links{display:flex;gap:16px;margin-top:4px}
+.links .btn.text{padding:0}
+.flat .row{padding-left:0;padding-right:0;min-height:56px}
+.flat .row .when{width:56px;font-size:14px;line-height:20px;flex:none}
 /* calendar */
 .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -500,42 +513,44 @@ function today(){
   const pendReq = S.requests.filter(r=>r.status==='pending' && r.from==='other');
   const pendExp = S.expenses.filter(e=>e.status==='pending' && e.paidBy==='other');
   const unread = S.solo ? 0 : S.messages.filter(m=>m.from==='other' && !m.readAt).length;
-  const evs = S.events.filter(e=>e.date>=TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4);
+  const evs = S.events.filter(e=>e.date>=TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,3);
   const hToday = nh && nh.date===TODAY;
   const checked = S.checkIns.find(c=>c.at.slice(0,10)===TODAY && c.who==='me');
-  let h = '';
-  if (S.solo) h += `<div class="banner">${S.other} hasn’t joined yet. Your records are being kept from today. <div class="btns"><button class="btn sm" data-a="toast" data-v="Invite link copied">Copy invite link</button><button class="btn sm ghost" data-a="joinOther">Prototype: ${S.other} joins</button></div></div>`;
   const holder = hToday ? nh.from : who;
-  h += `<section class="card"><h2 style="font-size:18px;line-height:24px;margin-bottom:12px">Care today</h2><dl class="facts">
-    <div><dt>Children</dt><dd>${kids()}</dd></div>
-    <div><dt>In the care of</dt><dd>${chip(holder)}</dd></div>
-    ${nh ? `<div><dt>Next handover</dt><dd>${nh.date===TODAY?'Today':fDate(nh.date)}, ${S.handover.time}</dd></div>
-    <div><dt>To</dt><dd>${chip(nh.to)}</dd></div>
-    <div style="align-items:flex-start;border-bottom:1px solid var(--border)"><dt>Place</dt><dd>${esc(S.handover.place)}</dd></div>` : ''}
-  </dl>`;
-  if (nh && M().handoverCheckIn) h += hToday
-      ? (checked ? `<div class="banner" style="margin:12px 0 0">${I('check')}<span class="bt">You checked in at ${fTime(checked.at)}. The time and a one-off location stamp were recorded.</span></div>` : `<div class="btns"><button class="btn block" data-a="sheet" data-v="checkin">Check in at handover</button></div>`)
-      : `<p class="note">${I('info')}Check-in opens on the day. It records the time and a one-off location stamp.</p>`;
-  if (nh && (M().handoverNotes || M().packingList)) h += `<div class="btns">${M().handoverNotes?`<button class="btn ghost" data-a="sheet" data-v="handoverNote">Handover note</button>`:''}${M().packingList?`<button class="btn ghost" data-a="sheet" data-v="packing">Packing ${S.packing.filter(p=>p.on).length}/${S.packing.length}</button>`:''}</div>`;
-  h += `</section>`;
-  if (M().handoverNotes && S.handoverNotes.length){ const n = S.handoverNotes[S.handoverNotes.length-1]; h += `<div class="card small"><b>Last handover note</b> <span class="muted">from ${nameOf(n.from)}, ${fDate(n.at)}</span><p style="margin:6px 0 0">${esc(n.text)}</p></div>`; }
-  if (pendReq.length || pendExp.length || unread) {
-    h += `<h3>Waiting for your response</h3><div class="card tight">`;
-    pendReq.forEach(r=> h += `<button class="row" data-a="sheet" data-v="request" data-id="${r.id}"><span class="av kid" style="width:40px;height:40px">${I('swap')}</span><span class="grow">${esc(r.text)}<div class="sub">From ${S.other}${M().requestExpiryHours?' · expires '+fStamp(new Date(new Date(r.at).getTime()+M().requestExpiryHours*3600000)):''}</div></span><span class="chev">${I('chev')}</span></button>`);
-    pendExp.forEach(e=> h += `<button class="row" data-a="sheet" data-v="expense" data-id="${e.id}"><span class="av kid" style="width:40px;height:40px">${I('money')}</span><span class="grow">${esc(e.title)} <span class="amt">${R(e.amount)}</span><div class="sub">Approve or query</div></span><span class="chev">${I('chev')}</span></button>`);
-    if (unread) h += `<button class="row" data-a="tab" data-v="messages"><span class="av kid" style="width:40px;height:40px">${I('chat')}</span><span class="grow">${unread} unread</span><span class="chev">${I('chev')}</span></button>`;
-    h += `</div>`;
+  const name = w => w==='me' ? 'you' : S.other;
+  let h = '';
+  if (S.solo) h += `<div class="banner">${I('info')}<span class="bt">${S.other} hasn’t joined yet. Records are kept from today. <button class="btn text sm" style="padding:0;height:auto" data-a="toast" data-v="Invite link copied">Copy invite link</button> · <button class="btn text sm" style="padding:0;height:auto" data-a="joinOther">Prototype: ${S.other} joins</button></span></div>`;
+
+  // 1. Who has the children
+  h += `<section class="hero">
+    <div class="who"><div class="av ${holder}">${holder==='me'?S.me[0]:S.other[0]}</div>
+    <div><div class="hero-t">With ${name(holder)}${hToday?' until '+S.handover.time:' today'}</div>
+    <div class="muted">${kids()}${nh?` · then with ${name(nh.to)}${hToday?'':' from '+fDay(nh.date)}`:''}</div></div></div>
+  </section>`;
+
+  // 2. Next handover, one line plus one action
+  if (nh) {
+    h += `<section class="flat-sec"><div class="lbl">Next handover</div>
+      <div class="hand"><b>${hToday?'Today':fDay(nh.date)}, ${S.handover.time}</b><span class="muted">${esc(S.handover.place)}</span></div>`;
+    if (M().handoverCheckIn) h += hToday
+      ? (checked ? `<p class="note">${I('check')}Checked in at ${fTime(checked.at)}. Time and a one-off location stamp recorded.</p>` : `<button class="btn block" style="margin-top:12px" data-a="sheet" data-v="checkin">Check in at handover</button>`)
+      : `<p class="note">${I('clock')}Check-in opens on the day.</p>`;
+    if (M().handoverNotes || M().packingList) h += `<div class="links">${M().handoverNotes?`<button class="btn text" data-a="sheet" data-v="handoverNote">Handover note</button>`:''}${M().packingList?`<button class="btn text" data-a="sheet" data-v="packing">Packing list ${S.packing.filter(p=>p.on).length}/${S.packing.length}</button>`:''}</div>`;
+    h += `</section>`;
   }
-  h += `<h3>What’s on</h3><div class="card tight">${evs.map(e=>`<button class="row" data-a="sheet" data-v="event" data-id="${e.id}"><span style="width:58px" class="small"><b>${e.date===TODAY?'Today':fDay(e.date).slice(0,3)+' '+parse(e.date).getDate()}</b><br>${e.time}</span><span class="grow">${esc(e.title)}<div class="sub">${esc(e.place)}</div></span><span class="chev">${I('chev')}</span></button>`).join('') || '<div class="row muted">Nothing planned</div>'}</div>`;
-  if (M().todos) {
-    h += `<h3>Shared to-dos</h3><div class="card tight">${S.todos.map(t=>`<label class="row"><input type="checkbox" data-a="todo" data-id="${t.id}" ${t.done?'checked':''} style="width:22px;height:22px"><span class="grow" style="${t.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.text)}</span><span class="pill">${nameOf(t.who)}</span></label>`).join('')}
-      <div class="row"><input class="f" id="todoText" placeholder="Add a to-do" style="min-height:40px"><button class="btn sm" data-a="addTodo">Add</button></div></div>`;
-  }
-  h += `<p class="note" style="margin-top:16px">${I('doc')}Requests, replies and check-ins are saved to the shared record with the date and time.</p>`;
-  if (M().journal) h += `<h3>Private journal</h3><div class="card"><p class="small muted" style="margin-top:0">Only you can see this. Notes are timestamped by the server.</p><button class="btn ghost block" data-a="sheet" data-v="journal">Open journal (${S.journal.length})</button></div>`;
+
+  // 3. Anything waiting on you
+  const items = [];
+  pendReq.forEach(r=> items.push(`<button class="row" data-a="sheet" data-v="request" data-id="${r.id}"><span class="grow">${esc(r.text)}<div class="sub">${S.other} asked${M().requestExpiryHours?' · respond by '+fStamp(new Date(new Date(r.at).getTime()+M().requestExpiryHours*3600000)):''}</div></span><span class="chev">${I('chev')}</span></button>`));
+  pendExp.forEach(e=> items.push(`<button class="row" data-a="sheet" data-v="expense" data-id="${e.id}"><span class="grow">Approve ${esc(e.title.toLowerCase())}, <span class="amt">${R(e.amount)}</span><div class="sub">Added by ${S.other}</div></span><span class="chev">${I('chev')}</span></button>`));
+  if (unread) items.push(`<button class="row" data-a="tab" data-v="messages"><span class="grow">${unread} new message${unread>1?'s':''}</span><span class="chev">${I('chev')}</span></button>`);
+  h += `<section class="flat-sec"><div class="lbl">Needs you${items.length?` (${items.length})`:''}</div>${items.length ? `<div class="flat">${items.join('')}</div>` : `<p class="muted" style="margin:4px 0 0">Nothing right now.</p>`}</section>`;
+
+  // 4. Coming up, short
+  h += `<section class="flat-sec"><div class="lbl">Coming up</div><div class="flat">${evs.map(e=>`<button class="row" data-a="sheet" data-v="event" data-id="${e.id}"><span class="when"><b>${e.date===TODAY?'Today':fDay(e.date).slice(0,3)+' '+parse(e.date).getDate()}</b><br>${e.time}</span><span class="grow">${esc(e.title)}</span></button>`).join('') || '<p class="muted">Nothing planned</p>'}</div>
+    <button class="btn text" style="padding:0;margin-top:4px" data-a="tab" data-v="calendar">See calendar</button></section>`;
   return h;
 }
-
 /* ---------- Calendar ---------- */
 function calendar(){
   const base = S.ui.calMonth ? parse(S.ui.calMonth) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -684,6 +699,7 @@ function sheetBody(s){
   case 'more': return `<h2>More</h2><div class="card tight">
       <button class="row" data-a="sheet" data-v="modeSettings"><span class="grow">Mode<div class="sub">${M().label}</div></span><span class="chev">${I('chev')}</span></button>
       ${M().journal?`<button class="row" data-a="sheet" data-v="journal"><span class="grow">Private journal<div class="sub">Only you can see it</div></span><span class="chev">${I('chev')}</span></button>`:''}
+      ${M().todos?`<button class="row" data-a="sheet" data-v="todos"><span class="grow">Shared to-dos<div class="sub">${S.todos.filter(t=>!t.done).length} open</div></span><span class="chev">${I('chev')}</span></button>`:''}
       ${M().packingList?`<button class="row" data-a="sheet" data-v="packing"><span class="grow">Packing list</span><span class="chev">${I('chev')}</span></button>`:''}
       <button class="row" data-a="sheet" data-v="records"><span class="grow">Records and export<div class="sub">Everything that’s been logged</div></span><span class="chev">${I('chev')}</span></button>
       <button class="row" data-a="tabKidsDocs"><span class="grow">Documents</span><span class="chev">${I('chev')}</span></button>
@@ -698,7 +714,9 @@ function sheetBody(s){
     return b + `<div class="btns">${close}</div>`;
   }
   case 'checkin': return `<h2>Check in at handover</h2><p>This records the time from our server and takes your location once, right now. Location is never tracked.</p><div class="card small">Expected: ${S.handover.time} at ${esc(S.handover.place)}</div><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="doCheckIn">Check in now</button></div>`;
-  case 'handoverNote': return `<h2>Handover note</h2><p class="small muted">A quick note for the other home.</p>${['Ate well','Slept well','Homework done','Medicine given'].map(x=>`<label class="check"><input type="checkbox" class="hn" value="${x}"> ${x}</label>`).join('')}<label class="f">Anything else</label><textarea class="f" id="hnText" placeholder="Ben has a spelling sheet due Monday"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveHandoverNote">Send note</button></div>`;
+  case 'handoverNote': { const ln = S.handoverNotes[S.handoverNotes.length-1]; return `<h2>Handover note</h2>${ln?`<div class="card small"><b>Last note from ${nameOf(ln.from)}</b>, ${fDate(ln.at)}<p style="margin:4px 0 0">${esc(ln.text)}</p></div>`:''}<p class="small muted">A quick note for the other home.</p>${['Ate well','Slept well','Homework done','Medicine given'].map(x=>`<label class="check"><input type="checkbox" class="hn" value="${x}"> ${x}</label>`).join('')}<label class="f">Anything else</label><textarea class="f" id="hnText" placeholder="Ben has a spelling sheet due Monday"></textarea><div class="btns"><button class="btn ghost" data-a="close">Cancel</button><button class="btn" data-a="saveHandoverNote">Send note</button></div>`; }
+  case 'todos': return `<h2>Shared to-dos</h2><div class="card tight">${S.todos.map(t=>`<label class="row"><input type="checkbox" data-a="todo" data-id="${t.id}" ${t.done?'checked':''} style="width:22px;height:22px"><span class="grow" style="${t.done?'text-decoration:line-through;color:var(--muted-foreground)':''}">${esc(t.text)}</span><span class="pill">${nameOf(t.who)}</span></label>`).join('')}
+      <div class="row"><input class="f" id="todoText" placeholder="Add a to-do"><button class="btn sm" data-a="addTodo">Add</button></div></div>${close}`;
   case 'packing': return `<h2>Packing list</h2><p class="small muted">What travels with the children. Reused every handover.</p><div class="card tight">${S.packing.map((p,i)=>`<label class="row"><input type="checkbox" data-a="pack" data-id="${i}" ${p.on?'checked':''} style="width:22px;height:22px"><span class="grow">${esc(p.t)}</span></label>`).join('')}</div><div class="btns"><button class="btn ghost" data-a="resetPacking">Untick all</button>${close}</div>`;
   case 'journal': return `<h2>Private journal</h2><p class="small muted">Only you can see these notes. They’re timestamped by the server and you can include them in your export.</p><textarea class="f" id="jText" placeholder="What happened?"></textarea><div class="btns"><button class="btn ghost sm" data-a="toast" data-v="Prototype: attach a photo">Add photo</button><button class="btn sm" data-a="addJournal">Save note</button></div><h3>Earlier notes</h3>${S.journal.slice().reverse().map(j=>`<div class="card small"><div class="muted">${fStamp(j.at)}</div>${esc(j.text)}</div>`).join('')}${close}`;
   case 'request': {
